@@ -287,6 +287,7 @@ char* ltgPosition(char* json_str, F* dChiOutFst, F* dChiOutSec, F* hChiOutFst, F
 
     char* ret_str = cJSON_PrintUnformatted(json_obj);
     cJSON_Delete(json_obj);
+    printf("\n\n");
     return ret_str;
 }
 
