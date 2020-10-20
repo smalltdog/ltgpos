@@ -631,10 +631,10 @@ Info_t* infoInit(F gridInvFst, F gridInvSec, F schDom[6], bool is_3D, F* dChiOut
  */
 int infoFree(Info_t* p)
 {
-    free(p->hChiOutFst);
-    free(p->hChiOutSec);
-    cudaFree(p->dChiOutFst);
-    cudaFree(p->dChiOutSec);
+    // free(p->hChiOutFst);
+    // free(p->hChiOutSec);
+    // cudaFree(p->dChiOutFst);
+    // cudaFree(p->dChiOutSec);
     cudaFree(p->dSchDomFst);
     cudaFree(p->dSchDomSec);
     free(p);
