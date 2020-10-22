@@ -1,0 +1,44 @@
+syntax = "proto2"; 
+
+message msg_to_server{
+  enum MSGTYPE {
+    INIT = 0;
+    CAL = 1;
+    END = 2;
+  }
+
+  message INIT_msg {
+    required int32 n_of_sensor = 1;
+    required int32 is_3D = 2;
+    optional double first_diff = 3;
+    optional double second_diff = 4;
+    repeated double searchDom = 5;
+    repeated double sensorLoc = 6;
+  }
+  message CAL_msg {
+    repeated double sensorTime = 1;
+  }
+  message END_msg {
+    required int32 is_END = 1;
+  }
+
+  required MSGTYPE msgType = 1;
+
+  required int32 size = 2;
+  
+  required int32 msgIndex = 3;
+
+  optional INIT_msg _init = 4;
+
+  optional CAL_msg cal = 5;
+
+  optional END_msg end = 6;
+}
+
+message search_result_to_client {
+    required int32 msgIndex = 1;
+    required int32 size = 2;
+    optional double error = 3;
+    optional double time = 4;
+    repeated double results_xyz = 5;
+}
