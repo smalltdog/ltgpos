@@ -27,13 +27,13 @@
 #define DEF_R ((F)6370693.5)
 
 
-
-
 /// 是否默认二级搜索
 #define DEFAULT_SECOND_SEARCH 1
 
 /// 对一级搜索结果进行二级搜索的范围 [-SEC_GRID_SIZE,+SEC_GRID_SIZE]
 #define SEC_GRID_SIZE (2)
+
+#define DEBUG 1
 
 /// 整个系统计算的数据类型
 typedef double F;
@@ -66,20 +66,8 @@ typedef struct {
 } Info_t;
 
 
-typedef struct CfgInfo {
-    int kMaxNumSensors = 64;
-    int kMaxGridSize = 80 * 80 * 80;
-    double SchDomRatio = 1.2;
-    double kDtimeThreshold = 1 / C;
-    F* dChiOutFst = NULL;
-    F* dChiOutSec = NULL;
-    F* hChiOutFst = NULL;
-    F* hChiOutSec = NULL;
-} CfgInfo;
-
-
 void nested_grid_search_sph(unsigned int nOfSensor, F* sensorLocs, F* sensorTimes, Info_t* info_p, F outAns[5], bool is3d);
 
-Info_t* infoInit(F gridInvFst, F gridInvSec, F schDom[6], bool is3d, CfgInfo* cfgInfo);
+Info_t* infoInit(F gridInvFst, F gridInvSec, F schDom[6], bool is3d);
 
 int infoFree(Info_t* p);

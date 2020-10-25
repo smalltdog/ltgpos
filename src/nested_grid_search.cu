@@ -503,7 +503,10 @@ void nested_grid_search_sph(unsigned int nOfSensor, F* sensorLocs, F* sensorTime
         else
             outAns[0] = tmp_time - (H_GetDistance_Sphere2D(sensorLocs[0], sensorLocs[1], outAns[1], outAns[2]) / C);
         outAns[4] = minChiSquareSec;
+
+        #ifdef DEBUG
         printf("[GridSearch] result: %lf,  %lf,  %lf,  %lf,  %lf\n", outAns[0], outAns[1], outAns[2], outAns[3], outAns[4]);
+        #endif
     }
     /// 是通过一级搜索得到的结果
     else {
@@ -516,7 +519,10 @@ void nested_grid_search_sph(unsigned int nOfSensor, F* sensorLocs, F* sensorTime
         else
             outAns[0] = tmp_time - (H_GetDistance_Sphere2D(sensorLocs[0], sensorLocs[1], outAns[1], outAns[2]) / C);
         outAns[4] = minChiSquareFst;
+
+        #ifdef DEBUG
         printf("[GridSearch] result: %lf,  %lf,  %lf,  %lf,  %lf", outAns[0], outAns[1], outAns[2], outAns[3], outAns[4]);
+        #endif
     }
 
     /// 释放局部缓存
@@ -535,7 +541,7 @@ void nested_grid_search_sph(unsigned int nOfSensor, F* sensorLocs, F* sensorTime
  * @param  is3d            是否是3d搜索,default false
  * @return Info_t* CUDA内存管理和网格搜索信息结构的指针
  */
-Info_t* infoInit(F gridInvFst, F gridInvSec, F schDom[6], bool is3d, CfgInfo* cfg_info)
+Info_t* infoInit(F gridInvFst, F gridInvSec, F schDom[6], bool is3d)
 {
     /// 初始化结构
     Info_t* pSystemInfo = (Info_t*)malloc(sizeof(Info_t));
@@ -555,7 +561,10 @@ Info_t* infoInit(F gridInvFst, F gridInvSec, F schDom[6], bool is3d, CfgInfo* cf
     int gridZSizeFst = !is3d ? 1:
                        (int)((schDom[5] - schDom[4]) / gridInvFst) + 1;
 
+    #ifdef DEBUG
     printf("[InfoInit] GridSizeFst: %d, %d, %d\n", gridXSizeFst, gridYSizeFst, gridZSizeFst);
+    #endif
+
     pSystemInfo->gridXSizeFst = gridXSizeFst;
     pSystemInfo->gridYSizeFst = gridYSizeFst;
     pSystemInfo->gridZSizeFst = gridZSizeFst;
@@ -587,7 +596,10 @@ Info_t* infoInit(F gridInvFst, F gridInvSec, F schDom[6], bool is3d, CfgInfo* cf
     int gridZSizeSec = !is3d ? 1 :
                        (int)((SEC_GRID_SIZE * two_sides * gridInvFst) / gridInvSec) + 1;
 
+    #ifdef DEBUG
     printf("[InfoInit] GridSizeSec: %d, %d, %d\n", gridXSizeSec, gridYSizeSec, gridZSizeSec);
+    #endif
+
     pSystemInfo->gridXSizeSec = gridXSizeSec;
     pSystemInfo->gridYSizeSec = gridYSizeSec;
     pSystemInfo->gridZSizeSec = gridZSizeSec;

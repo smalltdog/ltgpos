@@ -3,7 +3,88 @@
 
 const char* kJsonKey[5] = { "time", "longitude", "latitude", "altitude", "goodness" };
 
+F* ghChiOutFst, ghChiOutSec, gdChiOutFst, gdChiOutSec;
 
+int gMaxNumSensors = 64;            // 最大检测站点数，默认 64
+int gMaxGridSize = 80 * 80 * 80;    // 最大搜索网格数，默认 80 * 80 * 80
+double gSchDomRatio = 1.2;          // 搜索区域扩大比例，默认 1.2
+double gDtimeThreshold = 1 / C;     // 反演时选取阈值，默认 1 km / C km/ms
+bool gIsInvCal = true;              // 是否进行初筛以及反演计算，默认 true
+
+
+// 为网格搜索计算结果分配 Host 内存空间
+void H_mallocResBytes(void)
+{
+    while (1) {
+        ghChiOutFst = (F*)malloc(gMaxGridSize * sizeof(F));
+        if (hChiOut) break;
+        fprintf(stderr, "lightning_position(line %d): malloc hChiOutFst failed!\n", __LINE__);
+    }
+
+    while (1) {
+        ghChiOutSec = (F*)malloc(gMaxGridSize * sizeof(F));
+        if (hChiOut) break;
+        fprintf(stderr, "lightning_position(line %d): malloc hChiOutSec failed!\n", __LINE__);
+    }
+
+    return;
+}
+
+
+// 为网格搜索计算结果分配 Device 内存空间
+void D_mallocResBytes(void)
+{
+    cudaError_t cudaStatus;
+    do {
+        cudaStatus = cudaMalloc((void**)&gdChiOutFst, gMaxGridSize * sizeof(F));
+        if (cudaStatus != cudaSuccess)
+            fprintf(stderr, "lightning_position(line %d): cudamalloc dChiOutFst failed!\n", __LINE__);
+    } while (cudaStatus != cudaSuccess);
+
+    do {
+        cudaStatus = cudaMalloc((void**)&gdChiOutSec, gMaxGridSize * sizeof(F));
+        if (cudaStatus != cudaSuccess)
+            fprintf(stderr, "lightning_position(line %d): cudamalloc dChiOutSec failed!\n", __LINE__);
+    } while (cudaStatus != cudaSuccess);
+
+    return;
+}
+
+
+void mallocResBytes(void)
+{
+    H_mallocResBytes();
+    D_mallocResBytes();
+    return;
+}
+
+
+void freeResBytes(void)
+{
+    free(ghChiOutFst);
+    free(ghChiOutSec);
+    free(gdChiOutFst);
+    free(gdChiOutSec);
+}
+
+
+void setCfg(int maxNumSensors, int maxGridSize, double schDomRatio, double dtimeThreshold, bool isInvCal)
+{
+    gMaxNumSensors = maxNumSensors;
+    gMaxGridSize = maxGridSize;
+    gSchDomRatio = schDomRatio;
+    gDtimeThreshold = dtimeThreshold;
+    gIsInvCal = isInvCal;
+}
+
+
+void setCfgFromFile(char* filename)
+{
+    return;
+}
+
+
+// 二维 WGS_84 坐标距离计算
 F getDistance2d(F lat1, F lng1, F lat2, F lng2)
 {
     F rad_lat_A = RAD(lat1);
@@ -24,6 +105,7 @@ F getDistance2d(F lat1, F lng1, F lat2, F lng2)
 }
 
 
+// 三维 WGS_84 坐标距离计算
 F getDistance3d(F lat1, F lng1, F asl1, F lat2, F lng2, F asl2)
 {
     F distance = getDistance2d(lat1, lng1, lat2, lng2);
@@ -31,34 +113,7 @@ F getDistance3d(F lat1, F lng1, F asl1, F lat2, F lng2, F asl2)
 }
 
 
-// 为计算结果分配内存空间
-F* mallocResBytes(int kMaxGridSize)
-{
-    F* hChiOut = NULL;
-    while (1) {
-        hChiOut = (F*)malloc(kMaxGridSize * sizeof(F));
-        if (hChiOut) break;
-        fprintf(stderr, "lightning_position(line %d): malloc hChiOut failed!\n", __LINE__);
-    }
-    return hChiOut;
-}
-
-
-// 为计算结果分配CUDA内存空间
-F* cudamallocResBytes(int kMaxGridSize)
-{
-    F* dChiOut = NULL;
-    cudaError_t cudaStatus;
-    do {
-        cudaStatus = cudaMalloc((void**)&dChiOut, kMaxGridSize * sizeof(F));
-        if (cudaStatus != cudaSuccess)
-            fprintf(stderr, "lightning_position(line %d): cudamalloc dChiOut failed!\n", __LINE__);
-    } while (cudaStatus != cudaSuccess);
-
-    return dChiOut;
-}
-
-
+// 获取时间戳减一秒后的标准时间格式字符串
 char* timeminus1(char* ss)
 {
     char *p;
@@ -105,8 +160,18 @@ cJSON* cJSON_GetObjectItem_s(cJSON* object, const char* string)
 }
 
 
-char* ltgPosition(char* json_str, CfgInfo* cfg_info)
+char* ltgPosition(char* json_str)
 {
+    #ifdef DEBUG
+    printf("Configs: \n");
+    printf("\tMaxNumSensors:  %d\n", gMaxNumSensors);
+    printf("\tMaxGridSize:    %d\n", gMaxGridSize);
+    printf("\tSchDomRatio:    %d\n", gSchDomRatio);
+    printf("\tDtimeThreshold: %d\n", gDtimeThreshold);
+    printf("\tIsInvCal:       %d\n", gIsInvCal);
+    printf("\n");
+    #endif
+
     cJSON* json_arr = cJSON_Parse(json_str);
     cJSON* json_obj = NULL;
     cJSON* json_item = NULL;
@@ -118,7 +183,7 @@ char* ltgPosition(char* json_str, CfgInfo* cfg_info)
         exit(1);
     }
 
-    F sensor_locs[cfg_info->kMaxNumSensors * 3], sensor_times[cfg_info->kMaxNumSensors], sch_dom[6], out_ans[5];
+    F sensor_locs[gMaxNumSensors * 3], sensor_times[gMaxNumSensors], sch_dom[6], out_ans[5];
     F base_ms;
     char* base_datetime = NULL;
     bool is3d = false;
@@ -160,18 +225,17 @@ char* ltgPosition(char* json_str, CfgInfo* cfg_info)
             base_ms = (F)cJSON_GetObjectItem_s(json_obj, "microsecond")->valueint / 1e4;
             sensor_times[i] = 0;
         }
-        // printf("%lf ", sensor_times[i]);
     }
 
     // generate search domain, expand_ratio = 2
     for (int i = 0; i < 6; ++i) {
-        sch_dom[i] = (cfg_info->kSchDomRatio / 2 + 0.5) * coord_dom[i] -
-                     (cfg_info->kSchDomRatio / 2 - 0.5) * coord_dom[i % 2 ? i - 1 : i + 1];
+        sch_dom[i] = (gSchDomRatio / 2 + 0.5) * coord_dom[i] -
+                     (gSchDomRatio / 2 - 0.5) * coord_dom[i % 2 ? i - 1 : i + 1];
     }
 
     Info_t* info_p;
     info_p = infoInit(sqrt(sqrt((sch_dom[1] - sch_dom[0]) * (sch_dom[3] - sch_dom[2]) / 1e6)),
-                      0.001, sch_dom, is3d, cfg_info);
+                      0.001, sch_dom, is3d);
     if (!info_p) {
         fprintf(stderr, "lightning_position(line %d): SystemInfo init failed!\n", __LINE__);
         exit(1);
@@ -179,7 +243,7 @@ char* ltgPosition(char* json_str, CfgInfo* cfg_info)
 
 
     // preliminary positioning using 3 nodes
-    F sensor_lf[cfg_info->kMaxNumSensors * 3], sensor_tf[cfg_info->kMaxNumSensors];     // sensors locs & times for final calculation
+    F sensor_lf[gMaxNumSensors * 3], sensor_tf[gMaxNumSensors];     // sensors locs & times for final calculation
     F best_goodness;
     int best_ijk[3];
 
@@ -201,9 +265,9 @@ char* ltgPosition(char* json_str, CfgInfo* cfg_info)
         }
     }
 
-    int is_involved[cfg_info->kMaxNumSensors] = {0};
-    char* node_str[cfg_info->kMaxNumSensors];
-    F us[cfg_info->kMaxNumSensors], itdfs[cfg_info->kMaxNumSensors];
+    int is_involved[gMaxNumSensors] = {0};
+    char* node_str[gMaxNumSensors];
+    F us[gMaxNumSensors], itdfs[gMaxNumSensors];
 
     // copy best goodness nodes to sensor_lf & sensor_tf
     // i for 3 nodes of best goodness
@@ -232,13 +296,13 @@ char* ltgPosition(char* json_str, CfgInfo* cfg_info)
                               out_ans[1], out_ans[2], out_ans[3]) / C :
                 getDistance2d(sensor_locs[2 * i], sensor_locs[2 * i + 1],
                               out_ans[1], out_ans[2]) / C;
-        if (abs(dtime - sensor_times[i] + out_ans[0]) < cfg_info->kDtimeThreshold) {
-        // if (1) {
-            memcpy(sensor_lf + num_dims * num_involved, sensor_locs + num_dims * i, num_dims * sizeof(F));
-            sensor_tf[num_involved] = sensor_times[i];
-            is_involved[i] = 1;
-            node_str[num_involved] = cJSON_GetObjectItem_s(cJSON_GetArrayItem(json_arr, i), "node")->valuestring;
-            us[num_involved++] = cJSON_GetObjectItem_s(cJSON_GetArrayItem(json_arr, i), "signal_strength")->valuedouble;
+        if (gIsInvCal && abs(dtime - sensor_times[i] + out_ans[0]) >= gDtimeThreshold) continue;
+
+        memcpy(sensor_lf + num_dims * num_involved, sensor_locs + num_dims * i, num_dims * sizeof(F));
+        sensor_tf[num_involved] = sensor_times[i];
+        is_involved[i] = 1;
+        node_str[num_involved] = cJSON_GetObjectItem_s(cJSON_GetArrayItem(json_arr, i), "node")->valuestring;
+        us[num_involved++] = cJSON_GetObjectItem_s(cJSON_GetArrayItem(json_arr, i), "signal_strength")->valuedouble;
         }
     }
 
@@ -252,7 +316,7 @@ char* ltgPosition(char* json_str, CfgInfo* cfg_info)
         base_datetime = timeminus1(base_datetime);
     }
 
-    F all_dist[cfg_info->kMaxNumSensors], all_dtime[cfg_info->kMaxNumSensors];
+    F all_dist[gMaxNumSensors], all_dtime[gMaxNumSensors];
     for (int i = 0; i < num_sensors; ++i) {
         all_dist[i] = is3d ?
                       getDistance3d(sensor_locs[3 * i], sensor_locs[3 * i + 1], sensor_locs[3 * i + 2],
@@ -268,7 +332,7 @@ char* ltgPosition(char* json_str, CfgInfo* cfg_info)
         itdfs[j++] = pow(all_dist[i] / 100, 1.13) * exp((all_dist[i] - 100) / 100000) / 3.576 * us[j];
     }
 
-    F itdfs_sort[cfg_info->kMaxNumSensors];
+    F itdfs_sort[gMaxNumSensors];
     memcpy(itdfs_sort, itdfs, num_involved * sizeof(F));
     qsort(itdfs_sort, num_involved, sizeof(F), cmpfunc);
 
@@ -276,6 +340,7 @@ char* ltgPosition(char* json_str, CfgInfo* cfg_info)
     // create json obj for return
     json_obj = cJSON_CreateObject();
     cJSON_AddItemToObject(json_obj, "datetime", cJSON_CreateString(base_datetime));
+
     // create item from out_ans & add to json obj
     for (int i = 0; i < 5; ++i) {
         if (i == 3 && !is3d) continue;
@@ -298,6 +363,5 @@ char* ltgPosition(char* json_str, CfgInfo* cfg_info)
 
     char* ret_str = cJSON_PrintUnformatted(json_obj);
     cJSON_Delete(json_obj);
-    printf("\n\n");
     return ret_str;
 }
