@@ -6,11 +6,12 @@
 
 ```shell
 # 使用 CUDA 编译成 .so 动态链接库
-/usr/local/cuda-10.0/bin/nvcc --compiler-options "-fPIC" -shared lightning_position.cu nested_grid_search.cu cJSON.c -o liblightning_position.so
+bash tools/make.sh
+# /usr/local/cuda-10.0/bin/nvcc --compiler-options "-fPIC" -shared lightning_position.cu nested_grid_search.cu cJSON.c -o liblightning_position.so
 
 # 将动态链接库移动到库目录中
 sudo mkdir /usr/lib/lightning
-sudo mv liblightning_position.so /usr/lib/lightning
+sudo mv libs/liblightning_position.so /usr/lib/lightning
 
 # 配置 ldconfig
 sudo vim /etc/ld.so.conf.d/lightning.conf
