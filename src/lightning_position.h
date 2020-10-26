@@ -26,4 +26,4 @@ void mallocResBytes(void);
 void freeResBytes(void);
 
 // 并行雷电定位计算
-char* ltgPosition(char* json_str, CfgInfo cfgInfo);
+char* ltgPosition(char* json_str);

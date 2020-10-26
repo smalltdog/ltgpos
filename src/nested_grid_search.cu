@@ -541,7 +541,8 @@ void nested_grid_search_sph(unsigned int nOfSensor, F* sensorLocs, F* sensorTime
  * @param  is3d            是否是3d搜索,default false
  * @return Info_t* CUDA内存管理和网格搜索信息结构的指针
  */
-Info_t* infoInit(F gridInvFst, F gridInvSec, F schDom[6], bool is3d)
+Info_t* infoInit(F gridInvFst, F gridInvSec, F schDom[6], bool is3d, const int kMaxGridSize,
+                 F* hChiOutFst, F* hChiOutSec, F* dChiOutFst, F* dChiOutSec)
 {
     /// 初始化结构
     Info_t* pSystemInfo = (Info_t*)malloc(sizeof(Info_t));

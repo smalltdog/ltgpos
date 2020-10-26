@@ -3,13 +3,14 @@
 
 const char* kJsonKey[5] = { "time", "longitude", "latitude", "altitude", "goodness" };
 
-F* ghChiOutFst, ghChiOutSec, gdChiOutFst, gdChiOutSec;
-
 int gMaxNumSensors = 64;            // 最大检测站点数，默认 64
 int gMaxGridSize = 80 * 80 * 80;    // 最大搜索网格数，默认 80 * 80 * 80
 double gSchDomRatio = 1.2;          // 搜索区域扩大比例，默认 1.2
 double gDtimeThreshold = 1 / C;     // 反演时选取阈值，默认 1 km / C km/ms
 bool gIsInvCal = true;              // 是否进行初筛以及反演计算，默认 true
+
+// 为搜索结果分配的 Host 和 Device 内存空间
+F* ghChiOutFst, * ghChiOutSec, * gdChiOutFst, * gdChiOutSec;
 
 
 // 为网格搜索计算结果分配 Host 内存空间
@@ -17,13 +18,13 @@ void H_mallocResBytes(void)
 {
     while (1) {
         ghChiOutFst = (F*)malloc(gMaxGridSize * sizeof(F));
-        if (hChiOut) break;
+        if (ghChiOutFst) break;
         fprintf(stderr, "lightning_position(line %d): malloc hChiOutFst failed!\n", __LINE__);
     }
 
     while (1) {
         ghChiOutSec = (F*)malloc(gMaxGridSize * sizeof(F));
-        if (hChiOut) break;
+        if (ghChiOutSec) break;
         fprintf(stderr, "lightning_position(line %d): malloc hChiOutSec failed!\n", __LINE__);
     }
 
@@ -234,8 +235,8 @@ char* ltgPosition(char* json_str)
     }
 
     Info_t* info_p;
-    info_p = infoInit(sqrt(sqrt((sch_dom[1] - sch_dom[0]) * (sch_dom[3] - sch_dom[2]) / 1e6)),
-                      0.001, sch_dom, is3d);
+    info_p = infoInit(sqrt(sqrt((sch_dom[1] - sch_dom[0]) * (sch_dom[3] - sch_dom[2]) / 1e6)), 0.001,
+                      sch_dom, is3d, gMaxGridSize, ghChiOutFst, ghChiOutSec, gdChiOutFst, gdChiOutSec);
     if (!info_p) {
         fprintf(stderr, "lightning_position(line %d): SystemInfo init failed!\n", __LINE__);
         exit(1);
@@ -303,7 +304,6 @@ char* ltgPosition(char* json_str)
         is_involved[i] = 1;
         node_str[num_involved] = cJSON_GetObjectItem_s(cJSON_GetArrayItem(json_arr, i), "node")->valuestring;
         us[num_involved++] = cJSON_GetObjectItem_s(cJSON_GetArrayItem(json_arr, i), "signal_strength")->valuedouble;
-        }
     }
 
 

@@ -5,9 +5,8 @@
 ### 编译 CUDA 代码成 .so 动态链接库，并放入库环境路径中
 
 ```shell
-# 使用 CUDA 编译成 .so 动态链接库
+# 使用 nvcc 将 CUDA 代码编译成 .so 动态链接库
 bash tools/make.sh
-# /usr/local/cuda-10.0/bin/nvcc --compiler-options "-fPIC" -shared lightning_position.cu nested_grid_search.cu cJSON.c -o liblightning_position.so
 
 # 将动态链接库移动到库目录中
 sudo mkdir /usr/lib/lightning

@@ -39,6 +39,6 @@ class LtgPosCaller {
     }
 
     static {
-        System.load("../../libs/liblightning.so");
+        System.loadLibrary("lightning_position");
     }
 }

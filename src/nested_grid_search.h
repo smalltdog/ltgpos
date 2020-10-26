@@ -68,6 +68,7 @@ typedef struct {
 
 void nested_grid_search_sph(unsigned int nOfSensor, F* sensorLocs, F* sensorTimes, Info_t* info_p, F outAns[5], bool is3d);
 
-Info_t* infoInit(F gridInvFst, F gridInvSec, F schDom[6], bool is3d);
+Info_t* infoInit(F gridInvFst, F gridInvSec, F schDom[6], bool is3d, const int kMaxGridSize,
+                 F* hChiOutFst, F* hChiOutSec, F* dChiOutFst, F* dChiOutSec);
 
 int infoFree(Info_t* p);
