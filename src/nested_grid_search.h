@@ -33,7 +33,7 @@
 /// 对一级搜索结果进行二级搜索的范围 [-SEC_GRID_SIZE,+SEC_GRID_SIZE]
 #define SEC_GRID_SIZE (2)
 
-#define DEBUG 1
+// #define DEBUG 1
 
 /// 整个系统计算的数据类型
 typedef double F;

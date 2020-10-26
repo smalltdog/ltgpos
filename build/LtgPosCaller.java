@@ -39,6 +39,11 @@ class LtgPosCaller {
     }
 
     static {
-        System.loadLibrary("lightning_position");
+        // System.loadLibrary("lightning_position");
+        System.load("/home/jhy/repos/high-parallel-lightning-positioning/libs/liblightning_position.so");
+    }
+
+    protected void finalize() {
+        freeResBytes();
     }
 }

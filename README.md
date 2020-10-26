@@ -45,6 +45,9 @@ javac -encoding UTF-8 LtgPosCaller.java
 
 # 自动生成本地方法头文件 .h
 javah -jni LtgPosCaller
+
+# 
+gcc -I/usr/lib/jvm/java-7-openjdk-amd64/include -I/usr/lib/jvm/java-7-openjdk-amd64/include/solaris -fPIC -shared -o libHelloWorld.so HelloWorld.c
 ```
 
 ## Usage

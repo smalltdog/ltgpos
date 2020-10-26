@@ -1,27 +1,30 @@
-#include <jni.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include "Lightning_pos_caller.h"
-#include "lightning_position.h"
+#include <stdlib.h>
+#include <string.h>
+#include <jni.h>
+
+#include "../src/lightning_position.h"
+#include "LtgPosCaller.h"
 
 
-jstring charTojstring(JNIEnv* env, const char* pat) {
-    //定义java String类 strClass
+jstring charTojstring(JNIEnv* env, const char* pat)
+{
     jclass strClass = (env)->FindClass("Ljava/lang/String;");
-    //获取String(byte[],String)的构造器,用于将本地byte[]数组转换为一个新String
+    // 获取 String(byte[], String) 的构造器，用于将本地 byte 数组转换为一个新 String
     jmethodID ctorID = (env)->GetMethodID(strClass, "<init>", "([BLjava/lang/String;)V");
-    //建立byte数组
+    // 建立 byte 数组
     jbyteArray bytes = (env)->NewByteArray(strlen(pat));
-    //将char* 转换为byte数组
+    // 将 char* 转换为 byte 数组
     (env)->SetByteArrayRegion(bytes, 0, strlen(pat), (jbyte*) pat);
-    // 设置String, 保存语言类型,用于byte数组转换至String时的参数
+    // 设置 String，保存语言类型，用于 byte 数组转换至 String 时的参数
     jstring encoding = (env)->NewStringUTF("GB2312");
-    //将byte数组转换为java String,并输出
-    return (jstring) (env)->NewObject(strClass, ctorID, bytes, encoding);
+    // 将 byte 数组转换为 java String，并输出
+    return (jstring)(env)->NewObject(strClass, ctorID, bytes, encoding);
 }
 
-char* jstringToChar(JNIEnv* env, jstring jstr) {
+
+char* jstringToChar(JNIEnv* env, jstring jstr)
+{
     char* rtn = NULL;
     jclass clsstring = env->FindClass("java/lang/String");
     jstring strencode = env->NewStringUTF("GB2312");
@@ -39,13 +42,60 @@ char* jstringToChar(JNIEnv* env, jstring jstr) {
 }
 
 
-JNIEXPORT jstring JNICALL Java_Lightning_1pos_1caller_lightning_1pos(JNIEnv* env, jobject obj, jstring j_str) {
-        char* c_str = jstringToChar(env, j_str);
-        char * result = ltgPosition(c_str);
-        return charTojstring(env,c_str);
+/*
+ * Class:     LtgPosCaller
+ * Method:    ltgPosition
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_LtgPosCaller_ltgPosition(JNIEnv* env, jobject obj, jstring j_str)
+{
+    char* c_str = jstringToChar(env, j_str);
+    char* result = ltgPosition(c_str);
+    return charTojstring(env, result);
 }
 
 
-JNIEXPORT jint JNICALL Java_Lightning_1pos_1caller_lightning_1pos_1mem_1init(JNIEnv *, jobject){
-      return (jint)ltgMalloc();
+/*
+ * Class:     LtgPosCaller
+ * Method:    mallocResBytes
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_LtgPosCaller_mallocResBytes(JNIEnv* env, jobject obj)
+{
+    mallocResBytes();
+}
+
+
+/*
+ * Class:     LtgPosCaller
+ * Method:    freeResBytes
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_LtgPosCaller_freeResBytes(JNIEnv* env, jobject obj)
+{
+    freeResBytes();
+}
+
+
+/*
+ * Class:     LtgPosCaller
+ * Method:    setCfg
+ * Signature: (IIDDZ)V
+ */
+JNIEXPORT void JNICALL Java_LtgPosCaller_setCfg(JNIEnv* env, jobject obj, jint maxNumSensors,
+    jint maxGridSize, jdouble schDomRatio, jdouble dtimeThreshold, jboolean isInvCal)
+{
+    setCfg(maxNumSensors, maxGridSize, schDomRatio, dtimeThreshold, isInvCal);
+}
+
+
+/*
+ * Class:     LtgPosCaller
+ * Method:    setCfgFromFile
+ * Signature: (Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_LtgPosCaller_setCfgFromFile(JNIEnv* env, jobject obj, jstring filename)
+{
+    char* c_str = jstringToChar(env, filename);
+    setCfgFromFile(c_str);
 }
