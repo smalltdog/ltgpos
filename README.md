@@ -2,10 +2,11 @@
 
 ## Install
 
-### 编译 CUDA 代码成 .so 动态链接库，并放入库环境路径中
+### 编译 .so 动态链接库，并放入库环境路径中
 
 ```shell
 # 使用 nvcc 将 CUDA 代码编译成 .so 动态链接库
+# 执行该 shell 脚本前需先配置 shell 脚本开头的环境路径
 bash tools/make.sh
 
 # 将动态链接库移动到库目录中
