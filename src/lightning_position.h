@@ -21,7 +21,7 @@ void setCfg(int maxNumSensors, int maxGridSize, double schDomRatio, double dtime
 void setCfgFromFile(char* filename);
 
 // 为网格搜索计算结果分配 Host 和 Device 内存空间
-void mallocResBytes(void);
+int mallocResBytes(void);
 // 释放为网格搜索计算结果分配的 Host 和 Device 内存空间
 void freeResBytes(void);
 

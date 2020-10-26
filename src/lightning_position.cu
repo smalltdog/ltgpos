@@ -13,50 +13,37 @@ bool gIsInvCal = true;              // 是否进行初筛以及反演计算，�
 F* ghChiOutFst, * ghChiOutSec, * gdChiOutFst, * gdChiOutSec;
 
 
-// 为网格搜索计算结果分配 Host 内存空间
-void H_mallocResBytes(void)
+// 为网格搜索计算结果分配 Host 内存空间，分配成功返回1，否则返回0
+int H_mallocResBytes(F* hChiOut)
 {
-    while (1) {
-        ghChiOutFst = (F*)malloc(gMaxGridSize * sizeof(F));
-        if (ghChiOutFst) break;
-        fprintf(stderr, "lightning_position(line %d): malloc hChiOutFst failed!\n", __LINE__);
+    for (int i = 10; i;--i) {        
+        hChiOut = (F*)malloc(gMaxGridSize * sizeof(F));
+        if (hChiOut) return 1;
     }
-
-    while (1) {
-        ghChiOutSec = (F*)malloc(gMaxGridSize * sizeof(F));
-        if (ghChiOutSec) break;
-        fprintf(stderr, "lightning_position(line %d): malloc hChiOutSec failed!\n", __LINE__);
-    }
-
-    return;
+    fprintf(stderr, "lightning_position(line %d): malloc hChiOut failed!\n", __LINE__);
+    return 0;
 }
 
 
-// 为网格搜索计算结果分配 Device 内存空间
-void D_mallocResBytes(void)
-{
-    cudaError_t cudaStatus;
-    do {
-        cudaStatus = cudaMalloc((void**)&gdChiOutFst, gMaxGridSize * sizeof(F));
-        if (cudaStatus != cudaSuccess)
-            fprintf(stderr, "lightning_position(line %d): cudamalloc dChiOutFst failed!\n", __LINE__);
-    } while (cudaStatus != cudaSuccess);
-
-    do {
-        cudaStatus = cudaMalloc((void**)&gdChiOutSec, gMaxGridSize * sizeof(F));
-        if (cudaStatus != cudaSuccess)
-            fprintf(stderr, "lightning_position(line %d): cudamalloc dChiOutSec failed!\n", __LINE__);
-    } while (cudaStatus != cudaSuccess);
-
-    return;
+// 为网格搜索计算结果分配 Device 内存空间，分配成功返回1，否则返回0
+int D_mallocResBytes(F* dChiOut)
+{    
+    for (int i = 10; i;--i) {        
+        cudaError_t status = cudaMalloc((void**)&dChiOut, gMaxGridSize * sizeof(F));
+        if (status == cudaSuccess) return 1
+    }
+    fprintf(stderr, "lightning_position(line %d): malloc hChiOut failed!\n", __LINE__);
+    return 0;
 }
 
 
-void mallocResBytes(void)
+int mallocResBytes(void)
 {
-    H_mallocResBytes();
-    D_mallocResBytes();
-    return;
+    if (!H_mallocResBytes(ghChiOutFst)) return 0;
+    if (!H_mallocResBytes(ghChiOutSec)) return 0;
+    if (!D_mallocResBytes(gdChiOutFst)) return 0;
+    if (!D_mallocResBytes(gdChiOutSec)) return 0;
+    return 1;
 }
 
 
@@ -181,7 +168,7 @@ char* ltgPosition(char* json_str)
     if (num_sensors < 3) {
         fprintf(stderr, "lightning_position(line %d): Lightning position expect num of sensors > 2, but get %d\n",
                 __LINE__, num_sensors);
-        exit(1);
+        return NULL;
     }
 
     F sensor_locs[gMaxNumSensors * 3], sensor_times[gMaxNumSensors], sch_dom[6], out_ans[5];
@@ -204,7 +191,7 @@ char* ltgPosition(char* json_str)
             }
             if (!json_item) {                                                   // miss JSON key
                 fprintf(stderr, "lightning_position(line %d): Missing JSON key \"%s\"\n", __LINE__, kJsonKey[j + 1]);
-                exit(1);
+                return NULL;
             }
 
             sensor_locs[i * num_dims + j] = json_item->valuedouble;
@@ -239,7 +226,7 @@ char* ltgPosition(char* json_str)
                       sch_dom, is3d, gMaxGridSize, ghChiOutFst, ghChiOutSec, gdChiOutFst, gdChiOutSec);
     if (!info_p) {
         fprintf(stderr, "lightning_position(line %d): SystemInfo init failed!\n", __LINE__);
-        exit(1);
+        return NULL;
     }
 
 

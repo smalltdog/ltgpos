@@ -42,11 +42,6 @@ char* jstringToChar(JNIEnv* env, jstring jstr)
 }
 
 
-/*
- * Class:     LtgPosCaller
- * Method:    ltgPosition
- * Signature: (Ljava/lang/String;)Ljava/lang/String;
- */
 JNIEXPORT jstring JNICALL Java_LtgPosCaller_ltgPosition(JNIEnv* env, jobject obj, jstring j_str)
 {
     char* c_str = jstringToChar(env, j_str);
@@ -55,47 +50,30 @@ JNIEXPORT jstring JNICALL Java_LtgPosCaller_ltgPosition(JNIEnv* env, jobject obj
 }
 
 
-/*
- * Class:     LtgPosCaller
- * Method:    mallocResBytes
- * Signature: ()V
- */
 JNIEXPORT void JNICALL Java_LtgPosCaller_mallocResBytes(JNIEnv* env, jobject obj)
 {
-    mallocResBytes();
+    return (jint)mallocResBytes();
 }
 
 
-/*
- * Class:     LtgPosCaller
- * Method:    freeResBytes
- * Signature: ()V
- */
 JNIEXPORT void JNICALL Java_LtgPosCaller_freeResBytes(JNIEnv* env, jobject obj)
 {
     freeResBytes();
+    return;
 }
 
 
-/*
- * Class:     LtgPosCaller
- * Method:    setCfg
- * Signature: (IIDDZ)V
- */
 JNIEXPORT void JNICALL Java_LtgPosCaller_setCfg(JNIEnv* env, jobject obj, jint maxNumSensors,
     jint maxGridSize, jdouble schDomRatio, jdouble dtimeThreshold, jboolean isInvCal)
 {
     setCfg(maxNumSensors, maxGridSize, schDomRatio, dtimeThreshold, isInvCal);
+    return;
 }
 
 
-/*
- * Class:     LtgPosCaller
- * Method:    setCfgFromFile
- * Signature: (Ljava/lang/String;)V
- */
-JNIEXPORT void JNICALL Java_LtgPosCaller_setCfgFromFile(JNIEnv* env, jobject obj, jstring filename)
+JNIEXPORT void JNICALL Java_LtgPosCaller_setCfgFromFile(JNIEnv* env, jobject obj, jstring j_str)
 {
-    char* c_str = jstringToChar(env, filename);
+    char* c_str = jstringToChar(env, j_str);
     setCfgFromFile(c_str);
+    return;
 }
