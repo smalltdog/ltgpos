@@ -16,12 +16,12 @@ class LtgPosCaller {
      * @param  isInvCal         是否进行初筛以及反演计算，默认 true
      * @return Info_t* CUDA内存管理和网格搜索信息结构的指针
      */
-    void setCfg(int maxNumSensors, int maxGridSize, double schDomRatio, double dtimeThreshold, bool isInvCal);
+    public native void setCfg(int maxNumSensors, int maxGridSize, double schDomRatio, double dtimeThreshold, boolean isInvCal);
     // 从文件中读取系统计算配置参数
-    void setCfgFromFile(String filename);
+    public native void setCfgFromFile(String filename);
 
     public static void main(String[] args) {
-        LtgPosCaller instance = new Lightning_pos_caller();
+        LtgPosCaller instance = new LtgPosCaller();
 
         instance.mallocResBytes();
 

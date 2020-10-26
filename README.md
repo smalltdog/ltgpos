@@ -36,10 +36,16 @@ sudo ldconfig
 g++ test.c -I/usr/local/cuda/include/ -L. -llightning_position -o test.out
 ```
 
-### 编译 Java 语言测试程序
+### 编译 Java 程序
 
 ```shell
-g++ test.c -I/usr/local/cuda/include/ -L. -llightning_position -o test.out
+cd build
+
+# 将 .java 编译为 .class 文件
+javac -encoding UTF-8 LtgPosCaller.java
+
+# 自动生成本地方法头文件 .h
+javah -jni LtgPosCaller
 ```
 
 ## Usage
