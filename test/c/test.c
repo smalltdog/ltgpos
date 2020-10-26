@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../src/lightning_position.h"
+#include "../../src/lightning_position.h"
 
 
 int main()

@@ -32,7 +32,12 @@ sudo ldconfig
 ### 编译 C 语言测试程序
 
 ```shell
-# 编译测试程序，生成可执行文件
+g++ test.c -I/usr/local/cuda/include/ -L. -llightning_position -o test.out
+```
+
+### 编译 Java 语言测试程序
+
+```shell
 g++ test.c -I/usr/local/cuda/include/ -L. -llightning_position -o test.out
 ```
 
