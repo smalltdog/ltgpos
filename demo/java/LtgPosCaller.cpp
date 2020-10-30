@@ -3,7 +3,7 @@
 #include <string.h>
 #include <jni.h>
 
-#include "../src/lightning_position.h"
+#include "../../src/lightning_position.h"
 #include "LtgPosCaller.h"
 
 

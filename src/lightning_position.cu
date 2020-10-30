@@ -14,11 +14,11 @@ F* ghChiOutFst, * ghChiOutSec, * gdChiOutFst, * gdChiOutSec;
 
 
 // 为网格搜索计算结果分配 Host 内存空间，分配成功返回1，否则返回0
-int H_mallocResBytes(F* hChiOut)
+int H_mallocResBytes(F** hChiOut)
 {
     for (int i = 10; i;--i) {        
-        hChiOut = (F*)malloc(gMaxGridSize * sizeof(F));
-        if (hChiOut) return 1;
+        *hChiOut = (F*)malloc(gMaxGridSize * sizeof(F));
+        if (*hChiOut) return 1;
     }
     fprintf(stderr, "lightning_position(line %d): malloc hChiOut failed!\n", __LINE__);
     return 0;
@@ -26,11 +26,11 @@ int H_mallocResBytes(F* hChiOut)
 
 
 // 为网格搜索计算结果分配 Device 内存空间，分配成功返回1，否则返回0
-int D_mallocResBytes(F* dChiOut)
+int D_mallocResBytes(F** dChiOut)
 {    
     for (int i = 10; i;--i) {        
-        cudaError_t status = cudaMalloc((void**)&dChiOut, gMaxGridSize * sizeof(F));
-        if (status == cudaSuccess) return 1
+        cudaError_t status = cudaMalloc((void**)dChiOut, gMaxGridSize * sizeof(F));
+        if (status == cudaSuccess) return 1;
     }
     fprintf(stderr, "lightning_position(line %d): malloc hChiOut failed!\n", __LINE__);
     return 0;
@@ -39,10 +39,10 @@ int D_mallocResBytes(F* dChiOut)
 
 int mallocResBytes(void)
 {
-    if (!H_mallocResBytes(ghChiOutFst)) return 0;
-    if (!H_mallocResBytes(ghChiOutSec)) return 0;
-    if (!D_mallocResBytes(gdChiOutFst)) return 0;
-    if (!D_mallocResBytes(gdChiOutSec)) return 0;
+    if (!H_mallocResBytes(&ghChiOutFst)) return 0;
+    if (!H_mallocResBytes(&ghChiOutSec)) return 0;
+    if (!D_mallocResBytes(&gdChiOutFst)) return 0;
+    if (!D_mallocResBytes(&gdChiOutSec)) return 0;
     return 1;
 }
 
@@ -137,10 +137,24 @@ int cmpfunc(const void* a, const void* b)
 }
 
 
-#define cJSON_GetObjectItem_s(object, string) \
-    (cJSON_GetObjectItem(object, string) ? 
-     cJSON_GetObjectItem(object, string) :
-     fprintf(stderr, "lightning_position(line %d): Missing JSON key \"%s\"\n", __LINE__, string), 0)
+// inline cJSON* cJSON_GetObjectItem_s(cJSON* object, const char* string)
+// {
+//     cJSON* item = cJSON_GetObjectItem(object, string);
+//     if (!item) {
+//         fprintf(stderr, "lightning_position(line %d): Missing JSON key \"%s\"\n", __LINE__, string);
+//         goto L1;
+//     }
+//     return item;
+// }
+
+
+#define cJSON_GetObjectItem_s(json_item, obj, string) { \
+    (json_item) = cJSON_GetObjectItem((obj), (string)); \
+    if (!(json_item)) { \
+        fprintf(stderr, "lightning_position(line %d): Missing JSON key \"%s\"\n", __LINE__, (string)); \
+        return NULL; \
+    } \
+}
 
 
 char* ltgPosition(char* json_str)
@@ -149,8 +163,8 @@ char* ltgPosition(char* json_str)
     printf("Configs: \n");
     printf("\tMaxNumSensors:  %d\n", gMaxNumSensors);
     printf("\tMaxGridSize:    %d\n", gMaxGridSize);
-    printf("\tSchDomRatio:    %d\n", gSchDomRatio);
-    printf("\tDtimeThreshold: %d\n", gDtimeThreshold);
+    printf("\tSchDomRatio:    %lf\n", gSchDomRatio);
+    printf("\tDtimeThreshold: %lf\n", gDtimeThreshold);
     printf("\tIsInvCal:       %d\n", gIsInvCal);
     printf("\n");
     #endif
@@ -200,12 +214,15 @@ char* ltgPosition(char* json_str)
 
         // datetime & microseconds
         if (i) {
-            sensor_times[i] = (F)cJSON_GetObjectItem_s(json_obj, "microsecond")->valueint / 1e4 - base_ms;
+            cJSON_GetObjectItem_s(json_item, json_obj, "microsecond");
+            sensor_times[i] = (F)json_item->valueint / 1e4 - base_ms;
             if (sensor_times[i] <= 0) sensor_times[i] += 1e3;
         }
         else {
-            base_datetime = cJSON_GetObjectItem_s(json_obj, "datetime")->valuestring;
-            base_ms = (F)cJSON_GetObjectItem_s(json_obj, "microsecond")->valueint / 1e4;
+            cJSON_GetObjectItem_s(json_item, json_obj, "datetime");
+            base_datetime = json_item->valuestring;
+            cJSON_GetObjectItem_s(json_item, json_obj, "microsecond");
+            base_ms = (F)json_item->valueint / 1e4;
             sensor_times[i] = 0;
         }
     }
@@ -258,8 +275,10 @@ char* ltgPosition(char* json_str)
         memcpy(sensor_lf + num_dims * i, sensor_locs + num_dims * best_ijk[i], num_dims * sizeof(F));
         sensor_tf[i] = sensor_times[best_ijk[i]];
         is_involved[best_ijk[i]] = 1;
-        node_str[i] = cJSON_GetObjectItem_s(cJSON_GetArrayItem(json_arr, best_ijk[i]), "node")->valuestring;
-        us[i] = cJSON_GetObjectItem_s(cJSON_GetArrayItem(json_arr, best_ijk[i]), "signal_strength")->valuedouble;
+        cJSON_GetObjectItem_s(json_item, cJSON_GetArrayItem(json_arr, best_ijk[i]), "node");
+        node_str[i] = json_item->valuestring;
+        cJSON_GetObjectItem_s(json_item, cJSON_GetArrayItem(json_arr, best_ijk[i]), "signal_strength");
+        us[i] = json_item->valuedouble;
     }
 
 
@@ -284,10 +303,11 @@ char* ltgPosition(char* json_str)
         memcpy(sensor_lf + num_dims * num_involved, sensor_locs + num_dims * i, num_dims * sizeof(F));
         sensor_tf[num_involved] = sensor_times[i];
         is_involved[i] = 1;
-        node_str[num_involved] = cJSON_GetObjectItem_s(cJSON_GetArrayItem(json_arr, i), "node")->valuestring;
-        us[num_involved++] = cJSON_GetObjectItem_s(cJSON_GetArrayItem(json_arr, i), "signal_strength")->valuedouble;
+        cJSON_GetObjectItem_s(json_item, cJSON_GetArrayItem(json_arr, i), "node");
+        node_str[num_involved] = json_item->valuestring;
+        cJSON_GetObjectItem_s(json_item, cJSON_GetArrayItem(json_arr, i), "signal_strength");
+        us[num_involved++] = json_item->valuedouble;
     }
-
 
     // final calculation
     nested_grid_search_sph(--num_involved, sensor_lf, sensor_tf, info_p, out_ans, is3d);
@@ -318,7 +338,6 @@ char* ltgPosition(char* json_str)
     memcpy(itdfs_sort, itdfs, num_involved * sizeof(F));
     qsort(itdfs_sort, num_involved, sizeof(F), cmpfunc);
 
-
     // create json obj for return
     json_obj = cJSON_CreateObject();
     cJSON_AddItemToObject(json_obj, "datetime", cJSON_CreateString(base_datetime));
@@ -326,7 +345,7 @@ char* ltgPosition(char* json_str)
     // create item from out_ans & add to json obj
     for (int i = 0; i < 5; ++i) {
         if (i == 3 && !is3d) continue;
-        cJSON* json_item = cJSON_CreateNumber(out_ans[i]);
+        json_item = cJSON_CreateNumber(out_ans[i]);
         cJSON_AddItemToObject(json_obj, kJsonKey[i], json_item);
     }
 
