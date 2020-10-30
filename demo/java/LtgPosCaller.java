@@ -3,7 +3,7 @@ class LtgPosCaller {
     public native String ltgPosition(String str);
 
     // 为网格搜索计算结果分配 Host 和 Device 内存空间
-    public native void mallocResBytes();
+    public native int mallocResBytes();
     // 释放为网格搜索计算结果分配的 Host 和 Device 内存空间
     public native void freeResBytes();
 
@@ -24,7 +24,7 @@ class LtgPosCaller {
         LtgPosCaller instance = new LtgPosCaller();
 
         int isMallocSuccess = instance.mallocResBytes();
-        if (!isMallocSuccess) return "";
+        if (isMallocSuccess == 0) return "";
 
         String result = "";
         long start = System.nanoTime();

@@ -50,7 +50,7 @@ JNIEXPORT jstring JNICALL Java_LtgPosCaller_ltgPosition(JNIEnv* env, jobject obj
 }
 
 
-JNIEXPORT void JNICALL Java_LtgPosCaller_mallocResBytes(JNIEnv* env, jobject obj)
+JNIEXPORT int JNICALL Java_LtgPosCaller_mallocResBytes(JNIEnv* env, jobject obj)
 {
     return (jint)mallocResBytes();
 }
