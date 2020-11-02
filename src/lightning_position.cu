@@ -51,8 +51,8 @@ void freeResBytes(void)
 {
     free(ghChiOutFst);
     free(ghChiOutSec);
-    free(gdChiOutFst);
-    free(gdChiOutSec);
+    cudaFree(gdChiOutFst);
+    cudaFree(gdChiOutSec);
 }
 
 
