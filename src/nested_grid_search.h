@@ -29,7 +29,7 @@
 /// 是否默认二级搜索
 #define DEFAULT_SECOND_SEARCH 1
 
-/// 对一级搜索结果进行二级搜索的范围 [-SEC_GRID_SIZE,+SEC_GRID_SIZE]
+/// 对一级搜索结果进行二级搜索的范围 [-SEC_GRID_SIZE, +SEC_GRID_SIZE]
 #define SEC_GRID_SIZE (2)
 
 // #define DEBUG

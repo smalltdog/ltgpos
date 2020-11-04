@@ -1,7 +1,7 @@
 #include "lightning_position.h"
 
 
-const char* kJsonKey[5] = { "time", "longitude", "latitude", "altitude", "goodness" };
+const char* kJsonKey[5] = { "time", "latitude", "longitude", "altitude", "goodness" };
 
 int gMaxNumSensors = 64;            // 最大检测站点数，默认 64
 int gMaxGridSize = 80 * 80 * 80;    // 最大搜索网格数，默认 80 * 80 * 80
@@ -160,13 +160,12 @@ int cmpfunc(const void* a, const void* b)
 char* ltgPosition(char* json_str)
 {
     #ifdef DEBUG
-    printf("Configs: \n");
-    printf("\tMaxNumSensors:  %d\n", gMaxNumSensors);
-    printf("\tMaxGridSize:    %d\n", gMaxGridSize);
-    printf("\tSchDomRatio:    %lf\n", gSchDomRatio);
-    printf("\tDtimeThreshold: %lf\n", gDtimeThreshold);
-    printf("\tIsInvCal:       %d\n", gIsInvCal);
-    printf("\n");
+    printf("[Configs]: \n");
+    printf("\t   MaxNumSensors:  %d\n", gMaxNumSensors);
+    printf("\t   MaxGridSize:    %d\n", gMaxGridSize);
+    printf("\t   SchDomRatio:    %lf\n", gSchDomRatio);
+    printf("\t   DtimeThreshold: %lf\n", gDtimeThreshold);
+    printf("\t   IsInvCal:       %d\n\n", gIsInvCal);
     #endif
 
     cJSON* json_arr = cJSON_Parse(json_str);
@@ -184,7 +183,7 @@ char* ltgPosition(char* json_str)
     F base_ms;
     char* base_datetime = NULL;
     bool is3d = false;
-    F coord_dom[6];               // lon_min, lon_max, lat_min, lat_max, alt_min, alt_max;
+    F coord_dom[6];               // lat_min, lat_max, lon_min, lon_max, alt_min, alt_max;
 
     // get item from json object
     for (int i = 0; i < num_sensors; ++i) {
@@ -205,10 +204,10 @@ char* ltgPosition(char* json_str)
 
             sensor_locs[i * num_dims + j] = json_item->valuedouble;
             if (!i)                                                             // i=0, initialize coordinate domain
-                coord_dom[2 * j + 1] = coord_dom[2 * j] = sensor_locs[i * num_dims + j];
+                coord_dom[2 * j + 1] = coord_dom[2 * j] = sensor_locs[j];
             else if (sensor_locs[i * num_dims + j] > coord_dom[2 * j + 1])      // loc > max value of that dimension
                 coord_dom[2 * j + 1] = sensor_locs[i * num_dims + j];
-            else if (sensor_locs[i * num_dims + 1] < coord_dom[2 * j])          // loc < min value of that dimension
+            else if (sensor_locs[i * num_dims + j] < coord_dom[2 * j])          // loc < min value of that dimension
                 coord_dom[2 * j] = sensor_locs[i * num_dims + j];
         }
 
@@ -241,6 +240,12 @@ char* ltgPosition(char* json_str)
         return NULL;
     }
 
+    #ifdef DEBUG
+    printf("[Infoinit] GridInv: %lf\n", sqrt(sqrt((sch_dom[1] - sch_dom[0]) * (sch_dom[3] - sch_dom[2]) / 1e6)));
+    printf("[Infoinit] SchDom: ");
+    for (int i = 0; i < 6; ++i) printf("%lf ", sch_dom[i]);
+    printf("\n\n");
+    #endif
 
     // preliminary positioning using 3 nodes
     F sensor_lf[gMaxNumSensors * 3], sensor_tf[gMaxNumSensors];     // sensors locs & times for final calculation
@@ -281,13 +286,12 @@ char* ltgPosition(char* json_str)
         us[i] = json_item->valuedouble;
     }
 
-
     // inverse calculation
     F dtime;
     int num_involved = 3;
 
     for (int i = 0; i < num_sensors; ++i) {
-        if (i == best_ijk[0] && i == best_ijk[1] || i == best_ijk[2]) continue;
+        if (i == best_ijk[0] || i == best_ijk[1] || i == best_ijk[2]) continue;
 
         // memcpy(sensor_l + num_dims * 3, sensor_locs + num_dims * i, num_dims * sizeof(F));
         // sensor_t[3] = sensor_times[i];
@@ -310,7 +314,7 @@ char* ltgPosition(char* json_str)
     }
 
     // final calculation
-    nested_grid_search_sph(--num_involved, sensor_lf, sensor_tf, info_p, out_ans, is3d);
+    nested_grid_search_sph(num_involved, sensor_lf, sensor_tf, info_p, out_ans, is3d);
     infoFree(info_p);
 
     if ((out_ans[0] += base_ms) < 0) {

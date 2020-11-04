@@ -240,9 +240,9 @@ __global__ void chiSquareCal_sph3D(int nOfsensor, F* sensorLocs, F* sensorTimesL
     F zz = schDom[4] + gridInv * threadIdx.x;
 
     baseTime = D_GetDistance_Sphere3D(sensorLocs[0], sensorLocs[1], sensorLocs[2], xx, yy, zz) / C;
-    for (int i = 0; i < nOfsensor; i++) {
+    for (int i = 1; i < nOfsensor; i++) {
         distTime = D_GetDistance_Sphere3D(sensorLocs[3 * i], sensorLocs[3 * i + 1], sensorLocs[3 * i + 2], xx, yy, zz) / C - baseTime - sensorTimesLocal[i];
-        error += distTime * distTime;
+        error += distTime * distTime * 1e6;
     }
 
     error /= nOfsensor * nOfsensor;
@@ -260,7 +260,7 @@ __global__ void chiSquareCal_sph3D(int nOfsensor, F* sensorLocs, F* sensorTimesL
  * @param  outAns           F数组，在其中记录优度
  */
 __global__ void chiSquareCal_sph2D(int nOfsensor, F* sensorLocs, F* sensorTimesLocal, F gridInv, F schDom[4], F* outAns)
-{
+{   
     F error = 0, distTime, baseTime;
     /// 顺序为 y++ => x++
     F xx = schDom[0] + gridInv * blockIdx.x;
@@ -268,13 +268,11 @@ __global__ void chiSquareCal_sph2D(int nOfsensor, F* sensorLocs, F* sensorTimesL
 
     /// 这里的单位是km/(km/ms) =  ms
     baseTime = D_GetDistance_Sphere2D(sensorLocs[0], sensorLocs[1], xx, yy) / C;
-    for (int i = 0; i < nOfsensor; i++) {
+    for (int i = 1; i < nOfsensor; i++) {
         distTime = (D_GetDistance_Sphere2D(sensorLocs[2 * i], sensorLocs[2 * i + 1], xx, yy) / C - baseTime - sensorTimesLocal[i]);
         error += distTime * distTime * 1e6;
     }
-
     error /= nOfsensor - 2;
-    // printf("xx=%lf, yy=%lf :  %lf\n", xx, yy, error);
     outAns[blockIdx.x * blockDim.x + threadIdx.x] = error;
 }
 
@@ -521,7 +519,7 @@ void nested_grid_search_sph(unsigned int nOfSensor, F* sensorLocs, F* sensorTime
         outAns[4] = minChiSquareFst;
 
         #ifdef DEBUG
-        printf("[GridSearch] result: %lf,  %lf,  %lf,  %lf,  %lf", outAns[0], outAns[1], outAns[2], outAns[3], outAns[4]);
+        printf("[GridSearch] result: %lf,  %lf,  %lf,  %lf,  %lf\n", outAns[0], outAns[1], outAns[2], outAns[3], outAns[4]);
         #endif
     }
 
