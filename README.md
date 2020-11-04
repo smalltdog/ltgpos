@@ -1,7 +1,5 @@
 # High Parallel Lightning Positioning
 
-
-
 ## Install
 
 ### 编译 .so 动态链接库，并放入库环境路径中
@@ -11,8 +9,8 @@
 # 执行该 shell 脚本前需先配置 shell 脚本第 2 行和第 5 行中的路径
 bash tools/make_so.sh
 
-# 将动态链接库移动到库目录中
-sudo mv libs/liblightning_position.so /usr/lib/
+# # 将动态链接库移动到库目录中
+# sudo mv libs/liblightning_position.so /usr/lib/
 ```
 
 ## Usage
@@ -21,10 +19,16 @@ sudo mv libs/liblightning_position.so /usr/lib/
 
 ```shell
 # 编译 C 代码为可执行程序
-g++ demo/c/demo.c -I/usr/local/cuda/include/ -L. -llightning_position -o demo/c/demo.out
+g++ demo/c/test.c -I/usr/local/cuda/include/ -L. -llightning_position -o demo/c/test.out
 
 # 运行可执行程序
-demo/c/demo.out
+./demo/c/test.out
+```
+
+或者直接运行以下 shell 脚本
+
+```shell
+bash tools/test_make.sh
 ```
 
 ### 编译并运行 Java 程序
@@ -42,7 +46,8 @@ cd demo/java
 /path/to/your/java LtgPosCaller
 ```
 
-## TODO
+或者直接运行以下 shell 脚本
 
-- [ ] 精度测试
-- [ ] 写文档、代码注释
+```shell
+bash tools/demo_make.sh
+```

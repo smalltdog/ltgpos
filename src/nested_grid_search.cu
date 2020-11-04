@@ -234,7 +234,7 @@ inline  F H_GetDistance_Sphere3D_way2(F lat1, F lng1, F asl1, F lat2, F lng2, F 
 __global__ void chiSquareCal_sph3D(int nOfsensor, F* sensorLocs, F* sensorTimesLocal, F gridInv, F schDom[6], F* outAns)
 {
     F error = 0, distTime, baseTime;
-    /// 顺序为z++ => y++ => x++
+    /// 顺序为 z++ => y++ => x++
     F xx = schDom[0] + gridInv * blockIdx.y;
     F yy = schDom[2] + gridInv * blockIdx.x;
     F zz = schDom[4] + gridInv * threadIdx.x;

@@ -137,15 +137,17 @@ int cmpfunc(const void* a, const void* b)
 }
 
 
-// inline cJSON* cJSON_GetObjectItem_s(cJSON* object, const char* string)
-// {
-//     cJSON* item = cJSON_GetObjectItem(object, string);
-//     if (!item) {
-//         fprintf(stderr, "lightning_position(line %d): Missing JSON key \"%s\"\n", __LINE__, string);
-//         goto L1;
-//     }
-//     return item;
-// }
+/*
+inline cJSON* cJSON_GetObjectItem_s(cJSON* object, const char* string)
+{
+    cJSON* item = cJSON_GetObjectItem(object, string);
+    if (!item) {
+        fprintf(stderr, "lightning_position(line %d): Missing JSON key \"%s\"\n", __LINE__, string);
+        goto L1;
+    }
+    return item;
+}
+*/
 
 
 #define cJSON_GetObjectItem_s(json_item, obj, string) { \
