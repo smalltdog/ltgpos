@@ -7,7 +7,7 @@
 ```shell
 # 使用 nvcc 将 CUDA 代码编译成 .so 动态链接库
 # 执行该 shell 脚本前需先配置 shell 脚本第 2 行和第 5 行中的路径
-bash tools/make_so.sh
+bash tools/so_make.sh
 
 # # 将动态链接库移动到库目录中
 # sudo mv libs/liblightning_position.so /usr/lib/
