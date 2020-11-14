@@ -7,15 +7,16 @@
 #include "LtgPosCaller.h"
 
 
-jstring charTojstring(JNIEnv* env, const char* pat)
+jstring charTojstring(JNIEnv* env, const char* cstr)
 {
+    if (!cstr) return NULL;         // TODO return error
     jclass strClass = (env)->FindClass("Ljava/lang/String;");
     // 获取 String(byte[], String) 的构造器，用于将本地 byte 数组转换为一个新 String
     jmethodID ctorID = (env)->GetMethodID(strClass, "<init>", "([BLjava/lang/String;)V");
     // 建立 byte 数组
-    jbyteArray bytes = (env)->NewByteArray(strlen(pat));
+    jbyteArray bytes = (env)->NewByteArray(strlen(cstr));
     // 将 char* 转换为 byte 数组
-    (env)->SetByteArrayRegion(bytes, 0, strlen(pat), (jbyte*) pat);
+    (env)->SetByteArrayRegion(bytes, 0, strlen(cstr), (jbyte*) cstr);
     // 设置 String，保存语言类型，用于 byte 数组转换至 String 时的参数
     jstring encoding = (env)->NewStringUTF("GB2312");
     // 将 byte 数组转换为 java String，并输出

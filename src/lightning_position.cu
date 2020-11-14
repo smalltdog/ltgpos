@@ -133,7 +133,7 @@ char* timeminus1(char* ss)
 
 int cmpfunc(const void* a, const void* b)
 {
-    return *(F*)a - *(F*)b;
+    return *(F*)a - *(F*)b >= 0 ? 1 : -1;
 }
 
 
