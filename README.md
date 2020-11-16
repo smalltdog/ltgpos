@@ -1,6 +1,6 @@
 # ⚡️ High Parallel Lightning Positioning
 
-high parallel lightning positioning algorithm based on nested grid search.
+High parallel lightning positioning algorithm based on nested grid search, with CUDA parallel computing acceleration.
 
 ## Install
 
