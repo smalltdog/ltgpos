@@ -1,4 +1,6 @@
-# High Parallel Lightning Positioning
+# ⚡️ High Parallel Lightning Positioning
+
+high parallel lightning positioning algorithm based on nested grid search.
 
 ## Install
 
