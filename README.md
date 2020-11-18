@@ -15,6 +15,12 @@ bash tools/so_make.sh
 # sudo mv libs/liblightning_position.so /usr/lib/
 ```
 
+或者直接运行以下 shell 脚本
+
+```shell
+bash tools/so_make.sh
+```
+
 ## Usage
 
 ### 编译并运行 C 语言测试程序
