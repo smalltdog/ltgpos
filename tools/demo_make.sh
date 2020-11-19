@@ -1,4 +1,4 @@
-JAVA_HOME=~/jdk1.8.0/bin
+JAVA_HOME=/home/jhy/jdk1.8.0/bin
 
 cd demo/java
 

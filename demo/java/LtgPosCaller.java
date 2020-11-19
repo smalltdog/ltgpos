@@ -28,13 +28,14 @@ class LtgPosCaller {
             System.out.println("[Malloc] Result memory malloc failed\n");
 
         else {
+            String result;
             String json_str = "[ {\"datetime\": \"2020-11-23 01:01:12\", \"longitude\": 119.8493, \"latitude\": 29.5466, \"microsecond\": 2330000, \"node\": \"waibiwaibi\", \"signal_strength\":1},{\"datetime\": \"2020-11-23 01:01:12\", \"longitude\": 119.7540, \"latitude\": 29.4369, \"microsecond\": 8020000, \"node\": \"waibiwaibi\", \"signal_strength\":1}, {\"datetime\": \"2020-11-23 01:01:12\", \"longitude\": 119.8379, \"latitude\": 29.5471, \"microsecond\": 8700000, \"node\": \"waibiwaibi\", \"signal_strength\":1}, {\"datetime\": \"2020-11-23 01:01:12\", \"longitude\": 119.8429, \"latitude\": 29.5629, \"microsecond\": 9590000, \"node\": \"waibiwaibi\", \"signal_strength\":1} ]";
 
             // long start = System.nanoTime();
             // for(int i = 0; i < 10000; ++i)
 
             result = instance.ltgPosition(json_str);
-            System.out.println(result);
+            System.out.println(result + '\n');
 
             instance.setCfg(20, 80 * 80 * 80, 1.2, 1 / (299792458 / 1e6), false);
             result = instance.ltgPosition(json_str);
