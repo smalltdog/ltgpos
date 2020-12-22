@@ -55,12 +55,11 @@ void freeSysInfo()
 void initCalInfo(F* sch_dom, bool is3d)
 {
     F area = (sch_dom[1] - sch_dom[0]) * (sch_dom[3] - sch_dom[2]);
-    // TODO if area > 256, then warning.
     gSysInfo.nodes[0].is3d = false;
     gSysInfo.nodes[1].is3d = is3d;
-    // TODO
-    gSysInfo.nodes[0].grid_inv = sqrt(area * 2 / kMaxNumCncrThreads);
-    gSysInfo.nodes[1].grid_inv = gSysInfo.nodes[0].grid_inv;
+    F inv = sqrt(area * 2 / kMaxNumCncrThreads);
+    gSysInfo.nodes[0].grid_inv = inv;
+    gSysInfo.nodes[1].grid_inv = sqrt(inv * inv * 16 / 1024);
     memcpy(gSysInfo.nodes[0].sch_dom, sch_dom, 6 * sizeof(F));
 }
 

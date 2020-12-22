@@ -25,7 +25,7 @@ cJSON* parseJsonStr(const char* jstr, data_t* data, F gSchDomRatio)
     F* sch_dom = data->sch_dom;
     F* us = data->us;
     F coord_dom[6], base_ms;
-    char* base_datetime = data->base_datetime;
+    char** base_datetime = &data->base_datetime;
     char** node_str = data->node_str;
     int* is_involved = data->is_involved;
 
@@ -67,7 +67,7 @@ cJSON* parseJsonStr(const char* jstr, data_t* data, F gSchDomRatio)
         // Get datetime & milliseconds.
         if (i == 0) {
             cJSON_GetObjectItem_s(jitem, jobj, "datetime");
-            base_datetime = jitem->valuestring;
+            *base_datetime = jitem->valuestring;
             cJSON_GetObjectItem_s(jitem, jobj, "microsecond");
             base_ms = (F)jitem->valueint / 1e4;
             sensor_times[i] = 0;
@@ -117,7 +117,6 @@ char* formatRetJsonStr(data_t* data, cJSON* jarr, int gMaxNumSensors)
 
     cJSON* jobj = cJSON_CreateObject();
     cJSON_AddItemToObject(jobj, "datetime", cJSON_CreateString(data->base_datetime));
-    // free(data->base_datetime);
 
     // Create cJSON_Item from out_ans.
     for (int i = 0; i < 5; ++i) {

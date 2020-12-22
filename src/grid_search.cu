@@ -1,7 +1,7 @@
 #include "grid_search.h"
 
 
-const int kNumSearches = 1;
+const int kNumSearches = 2;
 const int kNxtSchDomInvs = 2;
 
 
@@ -12,7 +12,7 @@ __global__ void calGirdGoodness2d_G(info_t info, int num_sensors, F* sensor_locs
     F y = info.sch_dom[2] + info.grid_inv * blockIdx.x;
     int num_dims = info.is3d ? 3 : 2;
 
-    basetime = getGeoDistance2d_D(sensor_locs[0], sensor_locs[1], x, y);
+    basetime = getGeoDistance2d_D(sensor_locs[0], sensor_locs[1], x, y) / C;
     for (int i = 1; i < num_sensors; i++) {
         dtime = getGeoDistance2d_D(sensor_locs[i * num_dims], sensor_locs[i * num_dims + 1], x, y) / C -
                 basetime - sensor_times[i];
@@ -30,7 +30,7 @@ __global__ void calGirdGoodness3d_G(info_t info, int num_sensors, F* sensor_locs
     F y = info.sch_dom[2] + info.grid_inv * blockIdx.x;
     F z = info.sch_dom[3] + info.grid_inv * blockIdx.y;
 
-    basetime = getGeoDistance3d_D(sensor_locs[0], sensor_locs[1], sensor_locs[2], x, y, z);
+    basetime = getGeoDistance3d_D(sensor_locs[0], sensor_locs[1], sensor_locs[2], x, y, z) / C;
     for (int i = 1; i < num_sensors; i++) {
         dtime = getGeoDistance3d_D(sensor_locs[i * 3], sensor_locs[i * 3 + 1], sensor_locs[i * 3 + 2],
                                    x, y, z) / C - basetime - sensor_times[i];
@@ -85,7 +85,7 @@ void grid_search(sysinfo_t* sysinfo, int num_sensors, F* sensor_locs, F* sensor_
         // Generate search domain based on result of previous search.
         if (i != 0) {
             for (int j = 0; j < 4; j++) {
-                info->sch_dom[j] = results[j % 2 + 1] + info->grid_inv *
+                info->sch_dom[j] = results[j / 2 + 1] + info->grid_inv *
                                    kNxtSchDomInvs * ((j % 2) ? 1 : -1);
             }
             // Do 3D search in height of 0 ~ 20 km.
@@ -120,10 +120,10 @@ void grid_search(sysinfo_t* sysinfo, int num_sensors, F* sensor_locs, F* sensor_
 
         min_err = outs_h[0];
         int min_idx = 0;
-        for (int i = 1; i < grid_size; i++) {
-            if (outs_h[i] >= min_err) continue;
-            min_err = outs_h[i];
-            min_idx = i;
+        for (int j = 1; j < grid_size; j++) {
+            if (outs_h[j] >= min_err) continue;
+            min_err = outs_h[j];
+            min_idx = j;
         }
         // dump_to_file(outs_h, grid_sizes, "test/gridres.csv");
 
