@@ -4,7 +4,7 @@
 void getPrevDatetime(char* datetime, unsigned int secs)
 {
     char* token;
-    struct tm timeinfo, ptimeinfo;
+    struct tm timeinfo, * ptimeinfo;
     time_t timer;
 
     token = strtok(datetime, "-");
@@ -28,7 +28,7 @@ void getPrevDatetime(char* datetime, unsigned int secs)
 }
 
 
-int cmpItdfs(const void* a, const void* b)
+int cmpItdf(const void* a, const void* b)
 {
     return *(F*)a - *(F*)b >= 0 ? 1 : -1;
 }

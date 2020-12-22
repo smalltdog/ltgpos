@@ -1,6 +1,6 @@
 # ⚡️ Ltgpos
 
-Ltgpos is a high parallel lightning positioning algorithm based on nested grid search, with CUDA parallel computing acceleration.
+Ltgpos is a parallel lightning positioning algorithm based on grid search, with CUDA parallel computing acceleration.
 
 ## Install
 
@@ -19,7 +19,7 @@ bash tools/build.sh
 运行以下 Shell 脚本
 
 ```shell
-bash tools/test.sh
+bash tools/test.sh -i /path/to/data (-o)
 ```
 
 ### 编译并运行 Java Demo
@@ -36,9 +36,9 @@ bash tools/demo.sh
 cd demo/
 
 # 编译 Java 代码为 Java 类文件
-/path/to/your/javac -encoding UTF-8 LtgposCaller.java
+/path/to/javac -encoding UTF-8 LtgposCaller.java
 # 自动生成本地方法头文件
-/path/to/your/javah -jni LtgposCaller
+/path/to/javah -jni LtgposCaller
 # 运行 Java 程序
-/path/to/your/java LtgposCaller
+/path/to/java LtgposCaller
 ```

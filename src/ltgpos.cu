@@ -21,14 +21,14 @@ bool isInit = false;
 int initSysInfo()
 {
     int status;
-    status = malloc_s(&gSysInfo.node[0].outs_h, gMaxGridSize, "outs_h0");
+    status = malloc_s(&gSysInfo.nodes[0].outs_h, gMaxGridSize, "outs_h0");
     if (status) return 1;
-    status = malloc_s(&gSysInfo.node[1].outs_h, gMaxGridSize, "outs_h1");
+    status = malloc_s(&gSysInfo.nodes[1].outs_h, gMaxGridSize, "outs_h1");
     if (status) return 1;
 
-    status = cudaMalloc_s(&gSysInfo.node[0].outs_d, gMaxGridSize, "outs_d0");
+    status = cudaMalloc_s(&gSysInfo.nodes[0].outs_d, gMaxGridSize, "outs_d0");
     if (status) return 1;
-    status = cudaMalloc_s(&gSysInfo.node[1].outs_d, gMaxGridSize, "outs_d1");
+    status = cudaMalloc_s(&gSysInfo.nodes[1].outs_d, gMaxGridSize, "outs_d1");
     if (status) return 1;
 
     status = cudaMalloc_s(&gSysInfo.sensor_locs_d, gMaxNumSensors * 3, "sensor_locs");
@@ -42,26 +42,26 @@ int initSysInfo()
 
 void freeSysInfo()
 {
-    free(gSysInfo.node[0].outs_h);
-    free(gSysInfo.node[1].outs_h);
-    cudaFree(gSysInfo.node[0].outs_d);
-    cudaFree(gSysInfo.node[1].outs_d);
+    free(gSysInfo.nodes[0].outs_h);
+    free(gSysInfo.nodes[1].outs_h);
+    cudaFree(gSysInfo.nodes[0].outs_d);
+    cudaFree(gSysInfo.nodes[1].outs_d);
     cudaFree(gSysInfo.sensor_locs_d);
     cudaFree(gSysInfo.sensor_times_d);
     isInit = false;
 }
 
 
-int initCalInfo(data_t* data)
+void initCalInfo(F* sch_dom, bool is3d)
 {
-    F* sch_dom = sch_dom;
-    area = (sch_dom[1] - sch_dom[0]) * (sch_dom[3] - sch_dom[2]);
+    F area = (sch_dom[1] - sch_dom[0]) * (sch_dom[3] - sch_dom[2]);
     // TODO if area > 256, then warning.
-    gSysInfo.node[0].is3d = false;
-    gSysInfo.node[1].is3d = data->is3d;
-    gSysInfo.node[0].grid_inv = area * 2 / kMaxNumCncrThreads :
-    gSysInfo.node[1].grid_inv = gSysInfo.node[0].grid_inv;
-    gSysInfo.node[0].sch_dom = data->sch_dom;
+    gSysInfo.nodes[0].is3d = false;
+    gSysInfo.nodes[1].is3d = is3d;
+    // TODO
+    gSysInfo.nodes[0].grid_inv = sqrt(area * 2 / kMaxNumCncrThreads);
+    gSysInfo.nodes[1].grid_inv = gSysInfo.nodes[0].grid_inv;
+    memcpy(gSysInfo.nodes[0].sch_dom, sch_dom, 6 * sizeof(F));
 }
 
 
@@ -69,7 +69,8 @@ int set_cfg(int num_sensors, int grid_size)
 {
     gMaxNumSensors = num_sensors;
     gMaxGridSize <= kMaxNumThreads ? (gMaxGridSize = grid_size) :
-    fprintf(stderr, "%s (line %d): Grid size > the upper limit of concurrent threads.\n"， __FILE__, __LINE__);
+    fprintf(stderr, "%s(%d): grid size > the upper limit of concurrent threads.\n",
+            __FILE__, __LINE__);
     freeSysInfo();
     return initSysInfo();
 }
@@ -78,33 +79,40 @@ int set_cfg(int num_sensors, int grid_size)
 char* ltgpos(char* str)
 {
     if (!isInit) {
-        fprintf(stderr, "%s (line %d): SysInfo had not been initialized yet.\n", __FILE__, __LINE__);
+        fprintf(stderr, "%s(%d): sysInfo had not been initialized yet.\n", __FILE__, __LINE__);
         return NULL;
     }
 
     F sensor_locs[gMaxNumSensors * 3];
     F sensor_times[gMaxNumSensors];
     F sch_dom[6];
+    F out_ans[5];
+    F us[gMaxNumSensors];
+    char* node_str[gMaxNumSensors];
+    int is_involved[gMaxNumSensors];
 
     data_t data;
     data.sensor_locs = sensor_locs;
     data.sensor_times = sensor_times;
     data.sch_dom = sch_dom;
+    data.out_ans = out_ans;
+    data.us = us;
+    data.node_str = node_str;
+    data.is_involved = is_involved;
 
     // Get input data by parsing json string.
     // Ensure jarr is deleted before return.
     cJSON* jarr = parseJsonStr(str, &data, gSchDomRatio);
     if (!jarr) return NULL;
-    initCalInfo(&data);
 
-    F results[5];
-    grid_search(&gSysInfo, data.num_sensors, sensor_locs, sensor_times, results);
+    initCalInfo(data.sch_dom, data.is3d);
+    grid_search(&gSysInfo, data.num_sensors, sensor_locs, sensor_times, out_ans);
 
     #ifdef TEST
-    printf("%8lf, %10.4lf, %10.4lf, %8.2lf, %8.2lf\n");
+    printf("%10.4lf, %10.4lf, %8.2lf\n", out_ans[1], out_ans[2], out_ans[4]);
     #endif
 
-    // char* ret_str = formatRetJsonStr(result, jarr);
-    // Ensure ret_str is freed after use.
+    char* ret_str = formatRetJsonStr(&data, jarr, gMaxNumSensors);
+    // Ensure ret_str is deallocated after use.
     return ret_str;
 }

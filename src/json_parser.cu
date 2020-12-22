@@ -7,7 +7,8 @@ const char* kJsonKeys[5] = { "time", "latitude", "longitude", "altitude", "goodn
 #define cJSON_GetObjectItem_s(jitem, jobj, key) { \
     (jitem) = cJSON_GetObjectItem((jobj), (key)); \
     if (!(jitem)) { \
-        fprintf(stderr, "%s (line %d): Missing json key \"%s\".\n", __FILE__, __LINE__, key); \
+        fprintf(stderr, "%s(%d): missing json key \"%s\".\n", \
+                __FILE__, __LINE__, key); \
         return NULL; \
     } \
 }
@@ -15,21 +16,24 @@ const char* kJsonKeys[5] = { "time", "latitude", "longitude", "altitude", "goodn
 
 cJSON* parseJsonStr(const char* jstr, data_t* data, F gSchDomRatio)
 {
-    cJSON* jarr = cJOSN_Parse(jstr);
+    cJSON* jarr = cJSON_Parse(jstr);
     cJSON* jobj = NULL;
     cJSON* jitem = NULL;
 
     F* sensor_locs = data->sensor_locs;
     F* sensor_times = data->sensor_times;
     F* sch_dom = data->sch_dom;
+    F* us = data->us;
     F coord_dom[6], base_ms;
     char* base_datetime = data->base_datetime;
+    char** node_str = data->node_str;
+    int* is_involved = data->is_involved;
 
     int num_sensors = cJSON_GetArraySize(jarr), num_dims = 2;
     bool is3d = false;
 
     if (num_sensors < 3) {
-        fprintf(stderr, "%s (line %d): Lightning positioning expects get num of sensors >= 3, but get %d.\n",
+        fprintf(stderr, "%s(%d): lightning positioning expects get num of sensors >= 3, but get %d.\n",
                 __FILE__, __LINE__, num_sensors);
         return NULL;
     }
@@ -74,6 +78,13 @@ cJSON* parseJsonStr(const char* jstr, data_t* data, F gSchDomRatio)
             // Assert the diff of seconds < 1 s.
             if (sensor_times[i] < 0) sensor_times[i] += 1e3;
         }
+
+        // Get node string * signal strength.
+        cJSON_GetObjectItem_s(jitem, jobj, "node");
+        node_str[i] = jitem->valuestring;
+        cJSON_GetObjectItem_s(jitem, jobj, "signal_strength");
+        us[i] = jitem->valuedouble;
+        is_involved[i] = 1;
     }
 
     // Generate search domain with expand ratio.
@@ -89,31 +100,77 @@ cJSON* parseJsonStr(const char* jstr, data_t* data, F gSchDomRatio)
 }
 
 
-char* formatRetJsonStr(result_t* result, cJSON* jarr)
+char* formatRetJsonStr(data_t* data, cJSON* jarr, int gMaxNumSensors)
 {
-    jobj = cJSON_CreateObject();
-    cJSON_AddItemToObject(jobj, "datetime", cJSON_CreateString(result->base_datetime));
+    int num_sensors = data->num_sensors;
+    F* sensor_locs = data->sensor_locs;
+    F* sensor_times = data->sensor_times;
+    F* out_ans = data->out_ans;
+    F* us = data->us;
+    char** node_str = data->node_str;
+    int* is_involved = data->is_involved;
 
-    F* out_ans = reult->out_ans;
-    // Create cJSON_Item from out_ans.
-    for (int i = 0; i < 5; ++i) {
-        if (i == 3 && !is3d) continue;
-        jitem = cJSON_CreateNumber(out_ans[i]);
-        cJSON_AddItemToObject(jobj, kJsonKey[i], jitem);
+    if ((out_ans[0] += data->base_ms) < 0) {
+        out_ans[0] += 1e3;
+        getPrevDatetime(data->base_datetime, 1);
     }
 
+    cJSON* jobj = cJSON_CreateObject();
+    cJSON_AddItemToObject(jobj, "datetime", cJSON_CreateString(data->base_datetime));
+    // free(data->base_datetime);
+
+    // Create cJSON_Item from out_ans.
+    for (int i = 0; i < 5; ++i) {
+        if (i == 3 && !data->is3d) continue;
+        cJSON_AddItemToObject(jobj, kJsonKeys[i],
+                              cJSON_CreateNumber(out_ans[i]));
+    }
+
+    int num_involved = 0;
+    F all_dist[gMaxNumSensors], all_dtime[gMaxNumSensors];
+    F inv_us[gMaxNumSensors], inv_itdfs[gMaxNumSensors];
+    char* inv_nodes[gMaxNumSensors];
+
+    for (int i = 0; i < num_sensors; i++) {
+        all_dist[i] = data->is3d ?
+                      getGeoDistance3d_H(sensor_locs[i * 3], sensor_locs[i * 3 + 1], sensor_locs[i * 3 + 2],
+                                       out_ans[1], out_ans[2], out_ans[3]) :
+                      getGeoDistance2d_H(sensor_locs[i * 3], sensor_locs[i * 3 + 1],
+                                       out_ans[1], out_ans[2]);
+        all_dtime[i] = sensor_times[i] > sensor_times[0] ?
+                       sensor_times[i] / 1e4 : sensor_times[i] / 1e4 + 1e3;
+        all_dtime[i] += out_ans[0];
+
+        if (!is_involved[i]) continue;
+        inv_us[num_involved] = us[i];
+        inv_itdfs[num_involved] = calItdf(all_dist[i], us[i]);
+        inv_nodes[num_involved++] = node_str[i];
+    }
+    qsort(inv_itdfs, num_involved, sizeof(F), cmpItdf);
+
     cJSON_AddItemToObject(jobj, "current",
-                          cJSON_CreateNumber(num_sensors % 2 ? itdfs_sort[num_sensors / 2] :
-                          (itdfs_sort[num_sensors / 2] + itdfs_sort[num_sensors / 2 - 1]) / 2));
-    cJSON_AddItemToObject(jobj, "raw", json_arr);
-    cJSON_AddItemToObject(jobj, "allDistance", cJSON_CreateDoubleArray(all_dist, num_sensors));
-    cJSON_AddItemToObject(jobj, "timeDiff", cJSON_CreateDoubleArray(all_dtime, num_sensors));
-    cJSON_AddItemToObject(jobj, "involvedNode", cJSON_CreateStringArray((const char**)node_str, num_involved));
-    cJSON_AddItemToObject(jobj, "referenceNodeNode", cJSON_CreateString(node_str[0]));
-    cJSON_AddItemToObject(jobj, "basicThreeNode", cJSON_CreateStringArray((const char**)node_str, 3));
-    cJSON_AddItemToObject(jobj, "isInvolved", cJSON_CreateIntArray(is_involved, num_sensors));
-    cJSON_AddItemToObject(jobj, "involvedSignalStrength", cJSON_CreateDoubleArray(us, num_involved));
-    cJSON_AddItemToObject(jobj, "involvedEstimatedCurrent", cJSON_CreateDoubleArray(itdfs, num_involved));
+                          cJSON_CreateNumber(num_involved % 2 ? inv_itdfs[num_involved / 2] :
+                          (inv_itdfs[num_involved / 2] + inv_itdfs[num_involved / 2 - 1]) / 2));
+    cJSON_AddItemToObject(jobj, "raw", jarr);
+
+    cJSON_AddItemToObject(jobj, "allDist",
+                          cJSON_CreateDoubleArray(all_dist, num_sensors));
+    cJSON_AddItemToObject(jobj, "allDtime",
+                          cJSON_CreateDoubleArray(all_dtime, num_sensors));
+
+    cJSON_AddItemToObject(jobj, "isInvolved",
+                          cJSON_CreateIntArray(is_involved, num_sensors));
+    cJSON_AddItemToObject(jobj, "involvedNodes",
+                          cJSON_CreateStringArray((const char**)inv_nodes, num_involved));
+    cJSON_AddItemToObject(jobj, "referNode",
+                          cJSON_CreateString(inv_nodes[0]));
+    cJSON_AddItemToObject(jobj, "basicNodes",
+                          cJSON_CreateStringArray((const char**)inv_nodes, 3));
+
+    cJSON_AddItemToObject(jobj, "involvedSignalStrength",
+                          cJSON_CreateDoubleArray(inv_us, num_involved));
+    cJSON_AddItemToObject(jobj, "involvedResultCurrent",
+                          cJSON_CreateDoubleArray(inv_itdfs, num_involved));
 
     char* ret_str = cJSON_PrintUnformatted(jobj);
     cJSON_Delete(jobj);

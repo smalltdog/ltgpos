@@ -1,4 +1,4 @@
-. ./pathcfg.sh
+. tools/pathcfg.sh
 
 JAVA_BIN=$JAVA_HOME/bin
 
