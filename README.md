@@ -54,3 +54,4 @@ cd demo/
   - [ ] gridSize和Gridinv的分配设计，尽量多，尽量算的快
   - [ ] 实现策略的时候记得修改 num_involved
   - [ ] 补函数文档
+- [ ] 电流强度计算

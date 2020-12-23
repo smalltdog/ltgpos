@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv)
 {
-    char buf[2048];
+    char buf[10240];
     char* filename = argv[1];
     FILE* fp = fopen(filename, "r");
 
@@ -19,10 +19,10 @@ int main(int argc, char** argv)
 
     int i = 0;
     while (!feof(fp)) {
-        if (i == 1) break;
+        if (i == 16) break;
         fgets(buf, sizeof(buf), fp);
         ltgpos(buf);
-        printf("\n================================\n\n");
+        // printf("\n================================\n\n");
         i++;
     }
 

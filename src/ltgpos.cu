@@ -57,10 +57,12 @@ void initCalInfo(F* sch_dom, bool is3d)
     F area = (sch_dom[1] - sch_dom[0]) * (sch_dom[3] - sch_dom[2]);
     gSysInfo.nodes[0].is3d = false;
     gSysInfo.nodes[1].is3d = is3d;
-    F inv = sqrt(area * 2 / kMaxNumCncrThreads);
-    gSysInfo.nodes[0].grid_inv = inv;
-    gSysInfo.nodes[1].grid_inv = sqrt(inv * inv * 16 / 1024);
+    F inv = sqrt(area / gMaxGridSize);
+    gSysInfo.nodes[0].grid_inv = inv > 0.003 ? inv : 0.003;
+    inv = inv * 2 * kNxtSchDomInvs / sqrt(gMaxGridSize);
+    gSysInfo.nodes[1].grid_inv = inv > 0.0001 ? inv : 0.0001;
     memcpy(gSysInfo.nodes[0].sch_dom, sch_dom, 6 * sizeof(F));
+    // printf("%lf  %lf  ", gSysInfo.nodes[0].grid_inv, gSysInfo.nodes[1].grid_inv);
 }
 
 
@@ -108,7 +110,7 @@ char* ltgpos(char* str)
     grid_search(&gSysInfo, data.num_sensors, sensor_locs, sensor_times, out_ans);
 
     #ifdef TEST
-    printf("%10.4lf, %10.4lf, %8.2lf\n", out_ans[1], out_ans[2], out_ans[4]);
+    printf("%7.4lf  %8.4lf  %.4lf\n", out_ans[1], out_ans[2], out_ans[4]);
     #endif
 
     char* ret_str = formatRetJsonStr(&data, jarr, gMaxNumSensors);

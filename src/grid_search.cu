@@ -72,7 +72,7 @@ void grid_search(sysinfo_t* sysinfo, int num_sensors, F* sensor_locs, F* sensor_
     int grid_size, res_bytes;
     int grid_sizes[3];
     int num_dims = sysinfo->nodes[1].is3d ? 3 : 2;
-    F* sch_dom, * outs_h, min_err, grid_inv;
+    F* sch_dom, * outs_h, min_err, grid_inv, prev_inv;
     F* sensor_locs_d = sysinfo->sensor_locs_d;
     F* sensor_times_d = sysinfo->sensor_times_d;
 
@@ -85,7 +85,7 @@ void grid_search(sysinfo_t* sysinfo, int num_sensors, F* sensor_locs, F* sensor_
         // Generate search domain based on result of previous search.
         if (i != 0) {
             for (int j = 0; j < 4; j++) {
-                info->sch_dom[j] = results[j / 2 + 1] + info->grid_inv *
+                info->sch_dom[j] = results[j / 2 + 1] + prev_inv *
                                    kNxtSchDomInvs * ((j % 2) ? 1 : -1);
             }
             // Do 3D search in height of 0 ~ 20 km.
@@ -93,6 +93,7 @@ void grid_search(sysinfo_t* sysinfo, int num_sensors, F* sensor_locs, F* sensor_
             sch_dom[5] = info->is3d ? 20.0 / 100 : 0;
         }
 
+        prev_inv = grid_inv;
         for (int j = 0; j < 3; j++) {
             grid_sizes[j] = (sch_dom[j * 2 + 1] - sch_dom[j * 2]) / grid_inv + 1;
         }

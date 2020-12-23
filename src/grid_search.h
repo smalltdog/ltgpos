@@ -29,5 +29,7 @@ typedef struct sysinfo {
 } sysinfo_t;
 
 
+extern const int kNxtSchDomInvs;
+
 // ...
 void grid_search(sysinfo_t* sysinfo, int num_sensors, F* sensor_locs, F* sensor_times, F results[5]);
