@@ -19,7 +19,6 @@ int main(int argc, char** argv)
 
     int i = 0;
     while (!feof(fp)) {
-        if (i == 16) break;
         fgets(buf, sizeof(buf), fp);
         ltgpos(buf);
         // printf("\n================================\n\n");

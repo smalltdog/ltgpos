@@ -14,7 +14,7 @@ const char* kJsonKeys[5] = { "time", "latitude", "longitude", "altitude", "goodn
 }
 
 
-cJSON* parseJsonStr(const char* jstr, data_t* data, F gSchDomRatio)
+cJSON* parseJsonStr(const char* jstr, data_t* data, F gSchDomRatio, int gMaxNumSensors)
 {
     cJSON* jarr = cJSON_Parse(jstr);
     cJSON* jobj = NULL;
@@ -33,8 +33,13 @@ cJSON* parseJsonStr(const char* jstr, data_t* data, F gSchDomRatio)
     bool is3d = false;
 
     if (num_sensors < 3) {
-        fprintf(stderr, "%s(%d): lightning positioning expects get num of sensors >= 3, but get %d.\n",
+        fprintf(stderr, "%s(%d): lightning positioning expects to get num of sensors >= 3, but got %d.\n",
                 __FILE__, __LINE__, num_sensors);
+        return NULL;
+    }
+    if (num_sensors > gMaxNumSensors) {
+        fprintf(stderr, "%s(%d): lightning positioning expects to get num of sensors <= %d, but got %d.\n",
+                __FILE__, __LINE__, gMaxNumSensors, num_sensors);
         return NULL;
     }
 

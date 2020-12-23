@@ -46,11 +46,7 @@ cd demo/
 ## TODO
 - [ ] toa map 优化版 GridSearch
 - [ ] ltgpos
-  - [ ] kNumSearches 改成主调函数传进去
   - [ ] gridinv 设置方法，// TODO if area > 256, then warning.
-  - [ ] 计时，查看线程数，查看区域面积，格点数
-  - [ ] 如有必要，再加 setcfg 函数
-  - [ ] 能不能判断 gridsize 够不够大，然后进行重新setconfig，gridsize 提前判断，如果超了就自动增大，超了再恢复
   - [ ] gridSize和Gridinv的分配设计，尽量多，尽量算的快
   - [ ] 实现策略的时候记得修改 num_involved
   - [ ] 补函数文档

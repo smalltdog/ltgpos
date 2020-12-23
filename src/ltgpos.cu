@@ -3,8 +3,8 @@
 
 // The max number of threads on GPU.
 const int kMaxNumThreads = 512 * 65535;
-// The max number of concurrent threads on GTX 1080 Ti
-const int kMaxNumCncrThreads = 28 * 2048;
+// // The max number of concurrent threads on GTX 1080 Ti
+// const int kMaxNumCncrThreads = 28 * 2048;
 
 // Configs
 int gMaxNumSensors = 64;        // 最大检测站点数
@@ -57,12 +57,14 @@ void initCalInfo(F* sch_dom, bool is3d)
     F area = (sch_dom[1] - sch_dom[0]) * (sch_dom[3] - sch_dom[2]);
     gSysInfo.nodes[0].is3d = false;
     gSysInfo.nodes[1].is3d = is3d;
-    F inv = sqrt(area / gMaxGridSize);
+
+    // If inv = sqrt(area / gMaxGridSize) may
+    // make the actual grid size > gMaxGridSize.
+    F inv = sqrt(area / gMaxGridSize * 2);
     gSysInfo.nodes[0].grid_inv = inv > 0.003 ? inv : 0.003;
     inv = inv * 2 * kNxtSchDomInvs / sqrt(gMaxGridSize);
     gSysInfo.nodes[1].grid_inv = inv > 0.0001 ? inv : 0.0001;
     memcpy(gSysInfo.nodes[0].sch_dom, sch_dom, 6 * sizeof(F));
-    // printf("%lf  %lf  ", gSysInfo.nodes[0].grid_inv, gSysInfo.nodes[1].grid_inv);
 }
 
 
@@ -103,7 +105,7 @@ char* ltgpos(char* str)
 
     // Get input data by parsing json string.
     // Ensure jarr is deleted before return.
-    cJSON* jarr = parseJsonStr(str, &data, gSchDomRatio);
+    cJSON* jarr = parseJsonStr(str, &data, gSchDomRatio, gMaxNumSensors);
     if (!jarr) return NULL;
 
     initCalInfo(data.sch_dom, data.is3d);

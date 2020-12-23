@@ -26,7 +26,7 @@ typedef struct data {
 
 // Returns pointer to cJSON_Item if string parsed successfully.
 // cJSON_Item returned should be freed after use.
-cJSON* parseJsonStr(const char* jstr, data_t* data, F gSchDomRatio);
+cJSON* parseJsonStr(const char* jstr, data_t* data, F gSchDomRatio, int gMaxNumSensors);
 
 // Returns string formatted from cJSON_Object created according to result.
 // String returned should be deallocated after use.
