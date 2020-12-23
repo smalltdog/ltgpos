@@ -1,61 +1,53 @@
-# ⚡️ High Parallel Lightning Positioning
+# ⚡️ Ltgpos
 
-High parallel lightning positioning algorithm based on nested grid search, with CUDA parallel computing acceleration.
+Ltgpos is a parallel lightning positioning algorithm based on grid search, with CUDA parallel computing acceleration.
 
 ## Install
 
-### 编译 .so 动态链接库，并放入库环境路径中
+### 编译 .so 动态链接库，并加入库环境路径
+
+配置 `tools/pathcfg.sh` 中的路径，并运行以下 Shell 脚本
 
 ```shell
-# 使用 nvcc 将 CUDA 代码编译成 .so 动态链接库
-# 执行该 shell 脚本前需先配置 shell 脚本第 2 行和第 5 行中的路径
-bash tools/so_make.sh
-
-# # 将动态链接库移动到库目录中
-# sudo mv libs/liblightning_position.so /usr/lib/
-```
-
-或者直接运行以下 shell 脚本
-
-```shell
-bash tools/so_make.sh
+bash tools/build.sh
 ```
 
 ## Usage
 
-### 编译并运行 C 语言测试程序
+### 编译并运行测试程序
+
+运行以下 Shell 脚本
 
 ```shell
-# 编译 C 代码为可执行程序
-g++ demo/c/test.c -I/usr/local/cuda/include/ -L. -llightning_position -o demo/c/test.out
-
-# 运行可执行程序
-./demo/c/test.out
+bash tools/test.sh -i /path/to/input (-o)
 ```
 
-或者直接运行以下 shell 脚本
+### 编译并运行 Java Demo
+
+运行以下 Shell 脚本
 
 ```shell
-bash tools/test_make.sh
+bash tools/demo.sh
 ```
 
-### 编译并运行 Java 程序
+或运行以下命令
 
 ```shell
-cd demo/java
+cd demo/
 
-# 编译 JAVA 代码为 JAVA 类文件
-/path/to/your/javac -encoding UTF-8 LtgPosCaller.java
-
+# 编译 Java 代码为 Java 类文件
+/path/to/javac -encoding UTF-8 LtgposCaller.java
 # 自动生成本地方法头文件
-/path/to/your/javah -jni LtgPosCaller
-
-# 运行 JAVA 程序
-/path/to/your/java LtgPosCaller
+/path/to/javah -jni LtgposCaller
+# 运行 Java 程序
+/path/to/java LtgposCaller
 ```
 
-或者直接运行以下 shell 脚本
-
-```shell
-bash tools/demo_make.sh
-```
+## TODO
+- [ ] toa map 优化版 GridSearch
+- [ ] ltgpos
+  - [ ] gridinv 设置方法，// TODO if area > 256, then warning.
+  - [ ] gridSize和Gridinv的分配设计，尽量多，尽量算的快
+  - [ ] 实现策略的时候记得修改 num_involved
+  - [ ] 补函数文档
+- [ ] 电流强度计算

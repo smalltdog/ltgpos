@@ -1,0 +1,3 @@
+jdk*
+test/*.so
+test/*.out
