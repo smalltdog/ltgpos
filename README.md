@@ -44,10 +44,12 @@ cd demo/
 ```
 
 ## TODO
-- [ ] toa map 优化版 GridSearch
+
 - [ ] ltgpos
-  - [ ] gridinv 设置方法，// TODO if area > 256, then warning.
-  - [ ] gridSize和Gridinv的分配设计，尽量多，尽量算的快
-  - [ ] 实现策略的时候记得修改 num_involved
-  - [ ] 补函数文档
-- [ ] 电流强度计算
+  在优度非常小（0.0xx）的情况下有一些点的距离误差非常大
+  - [ ] 输出 num_sensors、sch_dom 的面积、优度和距离差 分析一下有没有合适的筛选条件
+  剩下的距离误差
+  - [ ] 1. 在初始站点中判断是否有站点距离其他站点很远，并且去掉后结果很好，去掉后要修改 sch_dom
+  - [ ] 2. toa map
+- [ ] 实现策略的时候记得修改 is_involved
+- [ ] 电流强度计算结果验证

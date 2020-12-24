@@ -1,3 +1,6 @@
 jdk*
 test/*.so
 test/*.out
+
+__pycache__
+*.pyc

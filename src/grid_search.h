@@ -16,7 +16,7 @@
 typedef struct info {
     bool is3d;
     int grid_sizes[3];
-    F grid_inv;
+    F grid_inv[3];
     F sch_dom[6];
     F* outs_h;
     F* outs_d;
@@ -30,6 +30,8 @@ typedef struct sysinfo {
 
 
 extern const int kNxtSchDomInvs;
+extern int gMaxGridSize;
+
 
 // ...
 void grid_search(sysinfo_t* sysinfo, int num_sensors, F* sensor_locs, F* sensor_times, F results[5]);

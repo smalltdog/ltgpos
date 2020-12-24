@@ -1,7 +1,7 @@
 from math import *
 
 
-def get_geodistance(lon1, lat1, lon2, lat2):
+def get_geodistance(lat1, lon1, lat2, lon2):
     '''Calculates distance of two GCS coordinates (measured in meters).'''
 
     ra = 6378.137
