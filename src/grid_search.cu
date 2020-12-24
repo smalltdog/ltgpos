@@ -4,12 +4,15 @@
 const int kNumSearches = 2;
 const int kNxtSchDomInvs = 2;
 
+int gMaxGridNum = 768;
+int gMaxGridSize = gMaxGridNum * gMaxGridNum;
+
 
 __global__ void calGirdGoodness2d_G(info_t info, int num_sensors, F* sensor_locs, F* sensor_times)
 {
     F basetime, dtime, err = 0;
-    F x = info.sch_dom[0] + info.grid_inv * threadIdx.x;
-    F y = info.sch_dom[2] + info.grid_inv * blockIdx.x;
+    F x = info.sch_dom[0] + info.grid_inv[0] * threadIdx.x;
+    F y = info.sch_dom[2] + info.grid_inv[1] * blockIdx.x;
     int num_dims = info.is3d ? 3 : 2;
 
     basetime = getGeoDistance2d_D(sensor_locs[0], sensor_locs[1], x, y) / C;
@@ -26,9 +29,9 @@ __global__ void calGirdGoodness2d_G(info_t info, int num_sensors, F* sensor_locs
 __global__ void calGirdGoodness3d_G(info_t info, int num_sensors, F* sensor_locs, F* sensor_times)
 {
     F basetime, dtime, err = 0;
-    F x = info.sch_dom[0] + info.grid_inv * threadIdx.x;
-    F y = info.sch_dom[2] + info.grid_inv * blockIdx.x;
-    F z = info.sch_dom[3] + info.grid_inv * blockIdx.y;
+    F x = info.sch_dom[0] + info.grid_inv[0] * threadIdx.x;
+    F y = info.sch_dom[2] + info.grid_inv[1] * blockIdx.x;
+    F z = info.sch_dom[3] + info.grid_inv[2] * blockIdx.y;
 
     basetime = getGeoDistance3d_D(sensor_locs[0], sensor_locs[1], sensor_locs[2], x, y, z) / C;
     for (int i = 1; i < num_sensors; i++) {
@@ -72,30 +75,37 @@ void grid_search(sysinfo_t* sysinfo, int num_sensors, F* sensor_locs, F* sensor_
     int grid_size, res_bytes;
     int grid_sizes[3];
     int num_dims = sysinfo->nodes[1].is3d ? 3 : 2;
-    F* sch_dom, * outs_h, min_err, grid_inv, prev_inv;
+    F* sch_dom, * outs_h, * grid_inv, prev_inv[3], min_err;
     F* sensor_locs_d = sysinfo->sensor_locs_d;
     F* sensor_times_d = sysinfo->sensor_times_d;
+    bool is3d;
 
     for (int i = 0; i < kNumSearches; i++) {
         info = &sysinfo->nodes[i];
         sch_dom = info->sch_dom;
         outs_h = info->outs_h;
         grid_inv = info->grid_inv;
+        is3d = info->is3d;
 
         // Generate search domain based on result of previous search.
-        if (i != 0) {
+        if (i) {
             for (int j = 0; j < 4; j++) {
-                info->sch_dom[j] = results[j / 2 + 1] + prev_inv *
-                                   kNxtSchDomInvs * ((j % 2) ? 1 : -1);
+                sch_dom[j] = results[j / 2 + 1] + prev_inv[j / 2] *
+                             kNxtSchDomInvs * ((j % 2) ? 1 : -1);
             }
-            // Do 3D search in height of 0 ~ 20 km.
-            sch_dom[4] = 0;
-            sch_dom[5] = info->is3d ? 20.0 / 100 : 0;
         }
+        // Do 3D search in height of 0 ~ 20 km.
+        sch_dom[4] = 0;
+        sch_dom[5] = is3d && i ? 20 : 0;
 
-        prev_inv = grid_inv;
         for (int j = 0; j < 3; j++) {
-            grid_sizes[j] = (sch_dom[j * 2 + 1] - sch_dom[j * 2]) / grid_inv + 1;
+            grid_inv[j] = j == 2 ? 1 :
+                          (sch_dom[j * 2 + 1] - sch_dom[j * 2]) /
+                          (gMaxGridNum - 1) * (is3d && i ? 5 : 1.02);
+            F clamp = i ? 2e-5 : 2e-3;
+            grid_inv[j] = grid_inv[j] > clamp ? grid_inv[j] : clamp;
+            grid_sizes[j] = (sch_dom[j * 2 + 1] - sch_dom[j * 2]) / grid_inv[j] + 1;
+            prev_inv[j] = grid_inv[j];
         }
 
         grid_size = grid_sizes[0] * grid_sizes[1] * grid_sizes[2];
@@ -107,7 +117,7 @@ void grid_search(sysinfo_t* sysinfo, int num_sensors, F* sensor_locs, F* sensor_
                    cudaMemcpyHostToDevice);
 
         // 3D grid search
-        if (info->is3d && i != 0) {
+        if (is3d && i) {
             dim3 grid(grid_sizes[1], grid_sizes[2]);
             dim3 block(grid_sizes[0]);
             calGirdGoodness3d_G <<<grid, block>>> (*info, num_sensors, sensor_locs_d, sensor_times_d);
@@ -128,14 +138,13 @@ void grid_search(sysinfo_t* sysinfo, int num_sensors, F* sensor_locs, F* sensor_
         }
         // dump_to_file(outs_h, grid_sizes, "test/gridres.csv");
 
-        results[1] = sch_dom[0] + min_idx % grid_sizes[0] * grid_inv;
-        results[2] = sch_dom[2] + min_idx / grid_sizes[0] % grid_sizes[1] * grid_inv;
-        results[3] = sch_dom[4] + min_idx / grid_sizes[0] / grid_sizes[1] * grid_inv;
+        results[1] = sch_dom[0] + min_idx % grid_sizes[0] * grid_inv[0];
+        results[2] = sch_dom[2] + min_idx / grid_sizes[0] % grid_sizes[1] * grid_inv[1];
+        results[3] = sch_dom[4] + min_idx / grid_sizes[0] / grid_sizes[1] * grid_inv[2];
     }
     // Assert results[3] == 0 and grid_sizes[2] == 1 when in 2D search.
     results[0] = sensor_times[0] - getGeoDistance3d_H(sensor_locs[0], sensor_locs[1], sensor_locs[2],
                                                       results[1], results[2], results[3]) / C;
-    results[3] *= 100;
     results[4] = min_err;
     return;
 }

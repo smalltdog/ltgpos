@@ -8,7 +8,7 @@ const int kMaxNumThreads = 512 * 65535;
 
 // Configs
 int gMaxNumSensors = 64;        // 最大检测站点数
-int gMaxGridSize = 768 * 768;   // 最大搜索网格数
+extern int gMaxGridSize;        // 最大搜索网格数
 double gSchDomRatio = 1.2;      // 搜索区域扩大比例
 double gGoodThres = 4;          // 优度阈值
 double gDtimeThres = 1 / C;     // 时差阈值
@@ -54,16 +54,8 @@ void freeSysInfo()
 
 void initCalInfo(F* sch_dom, bool is3d)
 {
-    F area = (sch_dom[1] - sch_dom[0]) * (sch_dom[3] - sch_dom[2]);
     gSysInfo.nodes[0].is3d = false;
     gSysInfo.nodes[1].is3d = is3d;
-
-    // If inv = sqrt(area / gMaxGridSize) may
-    // make the actual grid size > gMaxGridSize.
-    F inv = sqrt(area / gMaxGridSize * 2);
-    gSysInfo.nodes[0].grid_inv = inv > 0.003 ? inv : 0.003;
-    inv = inv * 2 * kNxtSchDomInvs / sqrt(gMaxGridSize);
-    gSysInfo.nodes[1].grid_inv = inv > 0.0001 ? inv : 0.0001;
     memcpy(gSysInfo.nodes[0].sch_dom, sch_dom, 6 * sizeof(F));
 }
 
