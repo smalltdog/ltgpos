@@ -22,6 +22,14 @@ bash tools/build.sh
 bash tools/test.sh -i /path/to/input (-o)
 ```
 
+根据计算结果对输入数据进行筛选
+
+```shell
+python test/badcase.py --idx 2
+```
+
+`input_2.csv`：优度和距离误差都较大的数据
+
 ### 编译并运行 Java Demo
 
 运行以下 Shell 脚本
