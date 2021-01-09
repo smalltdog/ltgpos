@@ -2,9 +2,10 @@
 
 $NVCC --compiler-options -fPIC -DTEST -rdc=true -shared \
     src/ltgpos.cu \
-    src/json_parser.cu \
     src/grid_search.cu \
+    src/json_parser.cu \
     src/geodistance.cu \
+    src/configs.cu \
     src/utils.cu \
     src/cJSON.c \
     -o libs/libltgpos.so

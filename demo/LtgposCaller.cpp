@@ -7,60 +7,54 @@
 #include "LtgposCaller.h"
 
 
-jstring charToJstring(JNIEnv* env, char* cstr)
+jstring cstr2jstr(JNIEnv* env, char* cstr)
 {
     if (!cstr) return NULL;
-    jclass strClass = (env)->FindClass("Ljava/lang/String;");
-    jmethodID mid = (env)->GetMethodID(strClass, "<init>", "([BLjava/lang/String;)V");
+    jclass Jstr = env->FindClass("Ljava/lang/String;");
+    jmethodID mid = env->GetMethodID(Jstr, "<init>", "([BLjava/lang/String;)V");
 
     // Convert C string to ByteArray.
-    jbyteArray bytes = (env)->NewByteArray(strlen(cstr));
-    (env)->SetByteArrayRegion(bytes, 0, strlen(cstr), (jbyte*) cstr);
-    free(cstr);
+    jbyteArray bytes = env->NewByteArray(strlen(cstr));
+    env->SetByteArrayRegion(bytes, 0, strlen(cstr), (jbyte*) cstr);
 
     // Convert ByteArray to Java String.
-    jstring encoding = (env)->NewStringUTF("GB2312");
-    return (jstring)(env)->NewObject(strClass, mid, bytes, encoding);
+    jstring enc = env->NewStringUTF("GB2312");
+    return (jstring)env->NewObject(Jstr, mid, bytes, enc);
 }
 
 
-char* jstringToChar(JNIEnv* env, jstring jstr)
+char* jstr2cstr(JNIEnv* env, jstring jstr)
 {
     char* cstr = NULL;
-    jclass strClass = env->FindClass("java/lang/String");
-    jstring encoding = env->NewStringUTF("GB2312");
-    jmethodID mid = env->GetMethodID(strClass, "getBytes", "(Ljava/lang/String;)[B");
+    jclass Jstr = env->FindClass("java/lang/String");
+    jmethodID mid = env->GetMethodID(Jstr, "getBytes", "(Ljava/lang/String;)[B");
+    jstring enc = env->NewStringUTF("GB2312");
+    jbyteArray bytes = (jbyteArray) env->CallObjectMethod(jstr, mid, enc);
 
-    jbyteArray bytes = (jbyteArray) env->CallObjectMethod(jstr, mid, encoding);
-    jsize bslen = env->GetArrayLength(bytes);
-    jbyte* b = env->GetByteArrayElements(bytes, JNI_FALSE);
+    jsize len = env->GetArrayLength(bytes);
+    jbyte* byte = env->GetByteArrayElements(bytes, JNI_FALSE);
 
-    if (bslen > 0) {
-        cstr = (char*) malloc(bslen + 1);
-        memcpy(cstr, b, bslen);
-        cstr[bslen] = 0;
+    if (len > 0) {
+        cstr = (char*) malloc(len + 1);
+        memcpy(cstr, byte, len);
+        cstr[len] = 0;
     }
-    env->ReleaseByteArrayElements(bytes, b, 0);
+    env->ReleaseByteArrayElements(bytes, byte, 0);
     return cstr;
 }
 
 
-JNIEXPORT jint JNICALL Java_LtgposCaller_initSysInfo
-  (JNIEnv* env, jobject obj) {
-    return (jint)initSysInfo();
-}
-
-
-JNIEXPORT void JNICALL Java_LtgposCaller_freeSysInfo
-  (JNIEnv* env, jobject obj) {
+JNIEXPORT void JNICALL Java_LtgposCaller_freeSysInfo(JNIEnv* env, jobject obj)
+{
     freeSysInfo();
     return;
 }
 
 
-JNIEXPORT jstring JNICALL Java_LtgposCaller_ltgpos
-  (JNIEnv* env, jobject obj, jstring jstr) {
-    char* cstr = jstringToChar(env, jstr);
+JNIEXPORT jstring JNICALL Java_LtgposCaller_ltgpos(JNIEnv* env, jobject obj, jstring jstr)
+{
+    char* cstr = jstr2cstr(env, jstr);
     char* rstr = ltgpos(cstr);
-    return charToJstring(env, rstr);
+    free(cstr);
+    return cstr2jstr(env, rstr);
 }

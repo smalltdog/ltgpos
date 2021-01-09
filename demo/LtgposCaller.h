@@ -9,14 +9,6 @@ extern "C" {
 #endif
 /*
  * Class:     LtgposCaller
- * Method:    initSysInfo
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_LtgposCaller_initSysInfo
-  (JNIEnv *, jobject);
-
-/*
- * Class:     LtgposCaller
  * Method:    freeSysInfo
  * Signature: ()V
  */

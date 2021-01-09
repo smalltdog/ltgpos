@@ -1,6 +1,9 @@
 #include "utils.h"
 
 
+const long mask = 0x1;
+
+
 void getPrevDatetime(char* datetime, unsigned int secs)
 {
     char* token;
@@ -31,4 +34,13 @@ void getPrevDatetime(char* datetime, unsigned int secs)
 int cmpItdf(const void* a, const void* b)
 {
     return *(F*)a - *(F*)b >= 0 ? 1 : -1;
+}
+
+
+int log2(long n)
+{
+    for (int i = 0; i < sizeof(n) * 8; i++) {
+        if (n & mask << i) return i;
+    }
+    return -1;
 }

@@ -15,13 +15,10 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    initSysInfo();
-
     int i = 0;
     while (!feof(fp)) {
-        fgets(buf, sizeof(buf), fp);
+        if (!fgets(buf, sizeof(buf), fp)) break;
         ltgpos(buf);
-        // printf("\n================================\n\n");
         i++;
     }
 

@@ -10,28 +10,26 @@
 #include <device_launch_parameters.h>
 
 #include "utils.h"
+#include "configs.h"
 #include "geodistance.h"
+#include "json_parser.h"
 
 
-typedef struct info {
+typedef struct ssrinfo {
+    int num_ssrs;
+    long involved;
     bool is3d;
-    int grid_sizes[3];
-    F grid_inv[3];
+    F* ssr_locs;
+    F* ssr_times;
+} ssrinfo_t;
+
+
+typedef struct grdinfo {
     F sch_dom[6];
-    F* outs_h;
-    F* outs_d;
-} info_t;
-
-typedef struct sysinfo {
-    F* sensor_locs_d;
-    F* sensor_times_d;
-    info_t nodes[2];
-} sysinfo_t;
+    F grd_inv[3];
+    F* houts;
+    F* douts;
+} grdinfo_t;
 
 
-extern const int kNxtSchDomInvs;
-extern int gMaxGridSize;
-
-
-// ...
-void grid_search(sysinfo_t* sysinfo, int num_sensors, F* sensor_locs, F* sensor_times, F results[5]);
+void grid_search(ssrinfo_t* sinfos, grdinfo_t* ginfos, schdata_t* schdata);

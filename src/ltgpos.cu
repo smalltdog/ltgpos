@@ -1,40 +1,23 @@
 #include "ltgpos.h"
 
 
-// The max number of threads on GPU.
-const int kMaxNumThreads = 512 * 65535;
-// // The max number of concurrent threads on GTX 1080 Ti
-// const int kMaxNumCncrThreads = 28 * 2048;
-
-// Configs
-int gMaxNumSensors = 64;        // 最大检测站点数
-extern int gMaxGridSize;        // 最大搜索网格数
-double gSchDomRatio = 1.2;      // 搜索区域扩大比例
-double gGoodThres = 4;          // 优度阈值
-double gDtimeThres = 1 / C;     // 时差阈值
-
-// Global system info
-sysinfo_t gSysInfo;
+ssrinfo_t gSsrInfos[kNumSchs];
+grdinfo_t gGrdInfos[kNumSchs];
 bool isInit = false;
 
 
 int initSysInfo()
 {
-    int status;
-    status = malloc_s(&gSysInfo.nodes[0].outs_h, gMaxGridSize, "outs_h0");
-    if (status) return 1;
-    status = malloc_s(&gSysInfo.nodes[1].outs_h, gMaxGridSize, "outs_h1");
-    if (status) return 1;
+    if (malloc_s(&gGrdInfos[0].houts, gMaxGridSize)) return 1;
+    gGrdInfos[1].houts = gGrdInfos[0].houts;
+    if (cudaMalloc_s(&gGrdInfos[0].douts, gMaxGridSize)) return 1;
+    gGrdInfos[1].douts = gGrdInfos[0].douts;
 
-    status = cudaMalloc_s(&gSysInfo.nodes[0].outs_d, gMaxGridSize, "outs_d0");
-    if (status) return 1;
-    status = cudaMalloc_s(&gSysInfo.nodes[1].outs_d, gMaxGridSize, "outs_d1");
-    if (status) return 1;
+    if (cudaMalloc_s(&gSsrInfos[0].ssr_locs, kMaxNumSsrs * 3)) return 1;
+    gSsrInfos[1].ssr_locs = gSsrInfos[0].ssr_locs;
+    if (cudaMalloc_s(&gSsrInfos[0].ssr_times, kMaxNumSsrs)) return 1;
+    gSsrInfos[1].ssr_times = gSsrInfos[0].ssr_times;
 
-    status = cudaMalloc_s(&gSysInfo.sensor_locs_d, gMaxNumSensors * 3, "sensor_locs");
-    if (status) return 1;
-    status = cudaMalloc_s(&gSysInfo.sensor_times_d, gMaxNumSensors, "sensor_times");
-    if (status) return 1;
     isInit = true;
     return 0;
 }
@@ -42,72 +25,45 @@ int initSysInfo()
 
 void freeSysInfo()
 {
-    free(gSysInfo.nodes[0].outs_h);
-    free(gSysInfo.nodes[1].outs_h);
-    cudaFree(gSysInfo.nodes[0].outs_d);
-    cudaFree(gSysInfo.nodes[1].outs_d);
-    cudaFree(gSysInfo.sensor_locs_d);
-    cudaFree(gSysInfo.sensor_times_d);
+    free(gGrdInfos[0].houts);
+    cudaFree(gGrdInfos[0].douts);
+    cudaFree(gSsrInfos[0].ssr_locs);
+    cudaFree(gSsrInfos[0].ssr_times);
     isInit = false;
 }
 
 
-void initCalInfo(F* sch_dom, bool is3d)
-{
-    gSysInfo.nodes[0].is3d = false;
-    gSysInfo.nodes[1].is3d = is3d;
-    memcpy(gSysInfo.nodes[0].sch_dom, sch_dom, 6 * sizeof(F));
-}
-
-
-int set_cfg(int num_sensors, int grid_size)
-{
-    gMaxNumSensors = num_sensors;
-    gMaxGridSize <= kMaxNumThreads ? (gMaxGridSize = grid_size) :
-    fprintf(stderr, "%s(%d): grid size > the upper limit of concurrent threads.\n",
-            __FILE__, __LINE__);
-    freeSysInfo();
-    return initSysInfo();
-}
+// int set_cfg(int num_sensors, int grid_size)
+// {
+//     gMaxGridSize <= kMaxNumThreads ? (gMaxGridSize = grid_size) :
+//     fprintf(stderr, "%s(%d): grid size > the upper limit of concurrent threads.\n",
+//             __FILE__, __LINE__);
+//     freeSysInfo();
+//     return initSysInfo();
+// }
 
 
 char* ltgpos(char* str)
 {
-    if (!isInit) {
-        fprintf(stderr, "%s(%d): sysInfo had not been initialized yet.\n", __FILE__, __LINE__);
+    if (!isInit && initSysInfo()) {
+        fprintf(stderr, "%s(%d): failed to initialize sysinfo.\n", __FILE__, __LINE__);
         return NULL;
     }
 
-    F sensor_locs[gMaxNumSensors * 3];
-    F sensor_times[gMaxNumSensors];
-    F sch_dom[6];
-    F out_ans[5];
-    F us[gMaxNumSensors];
-    char* node_str[gMaxNumSensors];
-    int is_involved[gMaxNumSensors];
+    schdata_t schdata;
 
-    data_t data;
-    data.sensor_locs = sensor_locs;
-    data.sensor_times = sensor_times;
-    data.sch_dom = sch_dom;
-    data.out_ans = out_ans;
-    data.us = us;
-    data.node_str = node_str;
-    data.is_involved = is_involved;
-
-    // Get input data by parsing json string.
     // Ensure jarr is deleted before return.
-    cJSON* jarr = parseJsonStr(str, &data, gSchDomRatio, gMaxNumSensors);
+    cJSON* jarr = parseJsonStr(str, &schdata);
     if (!jarr) return NULL;
 
-    initCalInfo(data.sch_dom, data.is3d);
-    grid_search(&gSysInfo, data.num_sensors, sensor_locs, sensor_times, out_ans);
+    grid_search(gSsrInfos, gGrdInfos, &schdata);
 
     #ifdef TEST
+    F* out_ans = schdata.out_ans;
     printf("%7.4lf  %8.4lf  %.4lf\n", out_ans[1], out_ans[2], out_ans[4]);
+    // printf("%.4lf\n", (sch_dom[1]-sch_dom[0]) * (sch_dom[3]-sch_dom[2]));
     #endif
 
-    char* ret_str = formatRetJsonStr(&data, jarr, gMaxNumSensors);
-    // Ensure ret_str is deallocated after use.
-    return ret_str;
+    // Ensure the string returned is deallocated after use.
+    return formatRetJsonStr(&schdata, jarr);
 }

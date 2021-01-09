@@ -1,5 +1,4 @@
 class LtgposCaller {
-    public native int initSysInfo();
     public native void freeSysInfo();
 
     public native String ltgpos(String str);
@@ -7,7 +6,7 @@ class LtgposCaller {
     public static void main(String[] args) {
         LtgposCaller instance = new LtgposCaller();
         String result;
-        String[] data = new String[] {
+        String[] inputs = new String[] {
             "[{\"node\":\"32-101\",\"datetime\":\"2020-08-20 15:51:36\",\"microsecond\":6060146,\"latitude\":29.16743888972841,\"signal_strength\":-61.6,\"longitude\":114.38147944399925},{\"node\":\"32-118\",\"datetime\":\"2020-08-20 15:51:36\",\"microsecond\":6060911,\"latitude\":29.339763332039986,\"signal_strength\":-22.0,\"longitude\":115.77484722100819},{\"node\":\"32-117\",\"datetime\":\"2020-08-20 15:51:36\",\"microsecond\":6061539,\"latitude\":28.70378639030727,\"signal_strength\":-28.4,\"longitude\":115.95272888983672}]",
             "[{\"node\":\"31-118\",\"datetime\":\"2020-08-20 15:03:55\",\"microsecond\":9444746,\"latitude\":30.726473052990595,\"signal_strength\":-339.4,\"longitude\":115.6742733322709},{\"node\":\"32-118\",\"datetime\":\"2020-08-20 15:03:55\",\"microsecond\":9449863,\"latitude\":29.339763332039986,\"signal_strength\":-34.1,\"longitude\":115.77484722100819},{\"node\":\"32-117\",\"datetime\":\"2020-08-20 15:03:55\",\"microsecond\":9452257,\"latitude\":28.70378639030727,\"signal_strength\":-21.7,\"longitude\":115.95272888983672}]",
             "[{\"node\":\"31-118\",\"datetime\":\"2020-08-20 16:32:51\",\"microsecond\":9807562,\"latitude\":30.726473052990595,\"signal_strength\":-289.8,\"longitude\":115.6742733322709},{\"node\":\"31-117\",\"datetime\":\"2020-08-20 16:32:51\",\"microsecond\":9808308,\"latitude\":30.080925556028312,\"signal_strength\":-218.9,\"longitude\":115.92481666642998},{\"node\":\"32-118\",\"datetime\":\"2020-08-20 16:32:51\",\"microsecond\":9811046,\"latitude\":29.339763332039986,\"signal_strength\":-78.5,\"longitude\":115.77484722100819},{\"node\":\"31-108\",\"datetime\":\"2020-08-20 16:32:51\",\"microsecond\":9812433,\"latitude\":29.833062220496814,\"signal_strength\":-64.4,\"longitude\":114.31401860824836},{\"node\":\"32-101\",\"datetime\":\"2020-08-20 16:32:51\",\"microsecond\":9813733,\"latitude\":29.16743888972841,\"signal_strength\":-46.9,\"longitude\":114.38147944399925},{\"node\":\"32-102\",\"datetime\":\"2020-08-20 16:32:51\",\"microsecond\":9815684,\"latitude\":28.25630527514944,\"signal_strength\":-30.4,\"longitude\":114.90539777571526},{\"node\":\"32-115\",\"datetime\":\"2020-08-20 16:32:51\",\"microsecond\":9816103,\"latitude\":27.98864027757595,\"signal_strength\":-35.0,\"longitude\":116.3553533340194},{\"node\":\"31-103\",\"datetime\":\"2020-08-20 16:32:51\",\"microsecond\":9816196,\"latitude\":30.462719443478818,\"signal_strength\":-31.9,\"longitude\":112.92030027847166},{\"node\":\"32-105\",\"datetime\":\"2020-08-20 16:32:51\",\"microsecond\":9816660,\"latitude\":28.692589998579077,\"signal_strength\":-29.4,\"longitude\":118.24557527708848},{\"node\":\"32-103\",\"datetime\":\"2020-08-20 16:32:51\",\"microsecond\":9819082,\"latitude\":27.260755279058706,\"signal_strength\":-26.4,\"longitude\":116.87400083217234}]",
@@ -40,14 +39,10 @@ class LtgposCaller {
             "[{\"node\":\"61-22\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":683967,\"latitude\":52.94086305745376,\"signal_strength\":-42.4,\"longitude\":122.58430472389465},{\"node\":\"31-110\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":684795,\"latitude\":29.70429972497157,\"signal_strength\":-89.2,\"longitude\":112.4043805578968},{\"node\":\"33-108\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":684963,\"latitude\":29.12054888894117,\"signal_strength\":-76.1,\"longitude\":110.53723805382414},{\"node\":\"31-120\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":685726,\"latitude\":30.173338331334573,\"signal_strength\":-83.8,\"longitude\":111.07469444431787},{\"node\":\"31-103\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":687953,\"latitude\":30.462719443478818,\"signal_strength\":-39.8,\"longitude\":112.92030027847166},{\"node\":\"31-108\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":690591,\"latitude\":29.833062220496814,\"signal_strength\":-40.2,\"longitude\":114.31401860824836},{\"node\":\"33-114\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":692206,\"latitude\":26.773577780011802,\"signal_strength\":-25.9,\"longitude\":113.52880583625476},{\"node\":\"31-112\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":693110,\"latitude\":32.11527249998908,\"signal_strength\":-19.3,\"longitude\":112.76593249961724},{\"node\":\"31-113\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":694772,\"latitude\":31.17199027509152,\"signal_strength\":-20.9,\"longitude\":115.0209458362142}]"
         };
 
-        int isInitSuccess = instance.initSysInfo();
-        if (isInitSuccess == 1) return;
-
-        for (int i = 0; i < data.length; i++) {
-            result = instance.ltgpos(data[i]);
+        for (int i = 0; i < inputs.length; i++) {
+            result = instance.ltgpos(inputs[i]);
             System.out.println(result + '\n');
         }
-
         instance.freeSysInfo();
     }
 

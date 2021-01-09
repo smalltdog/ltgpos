@@ -4,19 +4,21 @@
 #include <stdlib.h>
 
 #include "utils.h"
+#include "configs.h"
 #include "geodistance.h"
-#include "grid_search.h"
 #include "json_parser.h"
+#include "grid_search.h"
 
 
-int initSysInfo(void);
+// // Set configs for calculation utils.
+// // Returns 0 if re-init sysinfo successfully.
+// int set_cfg(int num_sensors, int grid_size);
 
-void freeSysInfo(void);
-
-// ...
-// Returns 0 if re-init sysinfo successfully.
-int set_cfg(int num_sensors, int grid_size);
-
-// Returns string formatted from result cJSON_Object.
+// Returns JSON-formatted string of output results.
 // String returned should be deallocated after use.
 char* ltgpos(char* str);
+
+// Free calculation informaiton for Ltgpos service,
+// including CPU & GPU memory allocated for parallel computing.
+// Should be called once the service is about to abort.
+void freeSysInfo(void);

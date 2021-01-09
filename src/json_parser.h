@@ -6,28 +6,25 @@
 
 #include "cJSON.h"
 #include "utils.h"
+#include "configs.h"
 #include "geodistance.h"
 
 
-typedef struct data {
-    int num_sensors;
+typedef struct schdata {
+    int num_ssrs;
+    long involved;
     bool is3d;
-    F* sensor_locs;
-    F* sensor_times;
-    F* sch_dom;
-    F* out_ans;
-    F* us;
-    F base_ms;
-    char* base_datetime;
-    char** node_str;
-    int* is_involved;
-} data_t;
+    F ssr_locs[64 * 3];
+    F ssr_times[64];
+    F sch_dom[6];
+    F out_ans[5];
+} schdata_t;
 
 
 // Returns pointer to cJSON_Item if string parsed successfully.
 // cJSON_Item returned should be freed after use.
-cJSON* parseJsonStr(const char* jstr, data_t* data, F gSchDomRatio, int gMaxNumSensors);
+cJSON* parseJsonStr(const char* jstr, schdata_t* schdata);
 
 // Returns string formatted from cJSON_Object created according to result.
 // String returned should be deallocated after use.
-char* formatRetJsonStr(data_t* result, cJSON* jarr, int gMaxNumSensors);
+char* formatRetJsonStr(schdata_t* schdata, cJSON* jarr);
