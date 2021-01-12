@@ -50,3 +50,19 @@ inline F calItdf(F dist, F u)
 {
     return pow(dist / 100, 1.13) * exp((dist - 100) / 1e5) / 3.576 * u;
 }
+
+
+inline F avg(F* a, int len, int dim, int d)
+{
+    F sum = 0;
+    for (int i = 0; i < len; i++) sum += a[i * dim + d];
+    return sum / len;
+}
+
+
+inline F var(F* a, int len, int dim, int d, F e)
+{
+    F dev = 0;
+    for (int i = 0; i < len; i++) dev += (a[i * dim + d] - e) * (a[i * dim + d] - e);
+    return dev / len;
+}

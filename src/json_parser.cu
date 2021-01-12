@@ -24,7 +24,7 @@ cJSON* parseJsonStr(const char* jstr, schdata_t* schdata)
     F* ssr_locs = schdata->ssr_locs;
     F* ssr_times = schdata->ssr_times;
     F* sch_dom = schdata->sch_dom;
-    F coord_dom[6], ms0;
+    F ssr_dom[6], ms0;
 
     int num_ssrs = cJSON_GetArraySize(jarr), num_dims = 2;
     long involved = 0;
@@ -38,6 +38,7 @@ cJSON* parseJsonStr(const char* jstr, schdata_t* schdata)
     if (num_ssrs > kMaxNumSsrs) {
         fprintf(stderr, "warning: ltgpos expects number of input sensors <= %d, but got %d. ignoring exceeding part.\n",
                 kMaxNumSsrs, num_ssrs);
+        num_ssrs = 64;
     }
 
     for (int i = 0; i < num_ssrs; i++) {
@@ -59,11 +60,11 @@ cJSON* parseJsonStr(const char* jstr, schdata_t* schdata)
 
             // Update coordinate domain with min or max values.
             if (!i)
-                coord_dom[2 * j + 1] = coord_dom[2 * j] = ssr_locs[j];
-            else if (ssr_locs[i * num_dims + j] > coord_dom[2 * j + 1])
-                coord_dom[2 * j + 1] = ssr_locs[i * num_dims + j];
-            else if (ssr_locs[i * num_dims + j] < coord_dom[2 * j])
-                coord_dom[2 * j] = ssr_locs[i * num_dims + j];
+                ssr_dom[2 * j + 1] = ssr_dom[2 * j] = ssr_locs[j];
+            else if (ssr_locs[i * num_dims + j] > ssr_dom[2 * j + 1])
+                ssr_dom[2 * j + 1] = ssr_locs[i * num_dims + j];
+            else if (ssr_locs[i * num_dims + j] < ssr_dom[2 * j])
+                ssr_dom[2 * j] = ssr_locs[i * num_dims + j];
         }
 
         // Get datetime & milliseconds.
@@ -72,14 +73,40 @@ cJSON* parseJsonStr(const char* jstr, schdata_t* schdata)
         ssr_times[i] = (F)jitem->valueint / 1e4 - ms0;
         // Assert the diff of seconds < 1 s.
         if (ssr_times[i] < 0) ssr_times[i] += 1e3;
+    }
+    involved = (mask << num_ssrs + 1) - 1;
 
-        involved |= mask << i;
+    // Filter out outlier sensors.
+    F s = (ssr_dom[3] - ssr_dom[2]) * (ssr_dom[1] - ssr_dom[0]);
+    F e0 = avg(ssr_locs, num_ssrs, num_dims, 0);
+    F e1 = avg(ssr_locs, num_ssrs, num_dims, 1);
+    F d0 = var(ssr_locs, num_ssrs, num_dims, 0, e0);
+    F d1 = var(ssr_locs, num_ssrs, num_dims, 1, e1);
+
+    if (num_ssrs > 3 && (s > 150 + 2.5 * num_ssrs || d0 + d1 > 20 + 0.5 * num_ssrs)) {
+        for (int i = 0; i < num_ssrs; i++) {
+            F d = abs(ssr_locs[i*num_dims] - e0) / d0 + abs(ssr_locs[i*num_dims+1] - e1) / d1;
+            if (d > 0.5 + 0.05 * num_ssrs) {
+                involved ^= mask << i;
+            }
+        }
+
+        for (int i = 0; i < num_ssrs; i++) {
+            if (!(involved & mask << i)) continue;
+            for (int j = 0; j < 3; j++) {
+                if (i == log2(involved)) ssr_dom[2 * j + 1] = ssr_dom[2 * j] = ssr_locs[j];
+                else if (ssr_locs[i * num_dims + j] > ssr_dom[2 * j + 1])
+                    ssr_dom[2 * j + 1] = ssr_locs[i * num_dims + j];
+                else if (ssr_locs[i * num_dims + j] < ssr_dom[2 * j])
+                    ssr_dom[2 * j] = ssr_locs[i * num_dims + j];
+            }
+        }
     }
 
     // Generate search domain with expand ratio.
     for (int i = 0; i < 6; i++) {
-        sch_dom[i] = (gSchDomRatio / 2 + 0.5) * coord_dom[i] -
-                     (gSchDomRatio / 2 - 0.5) * coord_dom[i % 2 ? i - 1 : i + 1];
+        sch_dom[i] = (gSchDomRatio / 2 + 0.5) * ssr_dom[i] -
+                     (gSchDomRatio / 2 - 0.5) * ssr_dom[i % 2 ? i - 1 : i + 1];
     }
 
     schdata->num_ssrs = num_ssrs;
@@ -126,9 +153,9 @@ char* formatRetJsonStr(schdata_t* schdata, cJSON* jarr)
         is_involved[i] = 1;
 
         cJSON_GetObjectItem_s(jitem, jobj, "signal_strength");
-        us[i] = jitem->valuedouble;
+        us[num_involved] = jitem->valuedouble;
         cJSON_GetObjectItem_s(jitem, jobj, "node");
-        nodes[i] = jitem->valuestring;
+        nodes[num_involved] = jitem->valuestring;
         itdfs[num_involved++] = calItdf(all_dist[i], us[i]);
     }
     qsort(itdfs, num_involved, sizeof(F), cmpItdf);

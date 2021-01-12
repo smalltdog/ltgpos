@@ -60,8 +60,14 @@ char* ltgpos(char* str)
 
     #ifdef TEST
     F* out_ans = schdata.out_ans;
+    F* sch_dom = schdata.sch_dom;
     printf("%7.4lf  %8.4lf  %.4lf\n", out_ans[1], out_ans[2], out_ans[4]);
-    // printf("%.4lf\n", (sch_dom[1]-sch_dom[0]) * (sch_dom[3]-sch_dom[2]));
+    printf("%7.4lf  %7.4lf  %8.4lf %8.4lf\n", sch_dom[0], sch_dom[1], sch_dom[2], sch_dom[3]);
+    // printf("%d\n", schdata.num_ssrs);
+
+    // F* ssr_locs = schdata.ssr_locs;
+    // for (int i = 0; i < schdata.num_ssrs; i++) printf("%.4lf, %.4lf\n", ssr_locs[i * 2], ssr_locs[i * 2 + 1]);
+    printf("\n");
     #endif
 
     // Ensure the string returned is deallocated after use.

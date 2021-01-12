@@ -16,7 +16,7 @@ args = parser.parse_args()
 
 
 def cond(goodness, distance):
-    if goodness > 50 and distance > 100:
+    if goodness < 25 and distance > 10:
         return True
     return False
 

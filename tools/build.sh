@@ -1,5 +1,12 @@
 . tools/pathcfg.sh
 
+[ $? -eq 0 ] || exit 1
+if [ "`ls -A libs`" != "" ]; then
+    rm libs/*
+fi
+[ $? -eq 0 ] || exit 1
+
+
 JAVA_INC1="$JAVA_HOME/include/"
 JAVA_INC2="$JAVA_HOME/include/linux"
 
