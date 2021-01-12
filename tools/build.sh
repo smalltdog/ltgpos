@@ -1,7 +1,9 @@
 . tools/pathcfg.sh
 
 [ $? -eq 0 ] || exit 1
-if [ "`ls -A libs`" != "" ]; then
+if [ ! -d "libs" ];then
+    mkdir libs
+elif [ "`ls -A libs`" != "" ]; then
     rm libs/*
 fi
 [ $? -eq 0 ] || exit 1
