@@ -3034,7 +3034,7 @@ PyObject *wavetf(double __pyx_v_freq, PyObject *__pyx_v_input, PyObject *__pyx_v
  *     input = wave_preprocessing(freq, np.array(input))
  *     imgs = slide_window(input, transformer=tf)             # <<<<<<<<<<<<<<
  *     vlm = imgtf(imgs)  # [3, 9, 112, 112]
- *     return vlm
+ *     return vlm.numpy().tolist()
  */
   __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_slide_window); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 72, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -3058,7 +3058,7 @@ PyObject *wavetf(double __pyx_v_freq, PyObject *__pyx_v_input, PyObject *__pyx_v
  *     input = wave_preprocessing(freq, np.array(input))
  *     imgs = slide_window(input, transformer=tf)
  *     vlm = imgtf(imgs)  # [3, 9, 112, 112]             # <<<<<<<<<<<<<<
- *     return vlm
+ *     return vlm.numpy().tolist()
  * 
  */
   __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_imgtf); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 73, __pyx_L1_error)
@@ -3084,13 +3084,48 @@ PyObject *wavetf(double __pyx_v_freq, PyObject *__pyx_v_input, PyObject *__pyx_v
   /* "wavetf.pyx":74
  *     imgs = slide_window(input, transformer=tf)
  *     vlm = imgtf(imgs)  # [3, 9, 112, 112]
- *     return vlm             # <<<<<<<<<<<<<<
+ *     return vlm.numpy().tolist()             # <<<<<<<<<<<<<<
  * 
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __Pyx_INCREF(__pyx_v_vlm);
-  __pyx_r = __pyx_v_vlm;
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_vlm, __pyx_n_s_numpy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 74, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = NULL;
+  if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
+    __pyx_t_1 = PyMethod_GET_SELF(__pyx_t_2);
+    if (likely(__pyx_t_1)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+      __Pyx_INCREF(__pyx_t_1);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_2, function);
+    }
+  }
+  __pyx_t_5 = (__pyx_t_1) ? __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_1) : __Pyx_PyObject_CallNoArg(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
+  if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 74, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_tolist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 74, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = NULL;
+  if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
+    __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_2);
+    if (likely(__pyx_t_5)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+      __Pyx_INCREF(__pyx_t_5);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_2, function);
+    }
+  }
+  __pyx_t_4 = (__pyx_t_5) ? __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_5) : __Pyx_PyObject_CallNoArg(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+  if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 74, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_r = __pyx_t_4;
+  __pyx_t_4 = 0;
   goto __pyx_L0;
 
   /* "wavetf.pyx":70
