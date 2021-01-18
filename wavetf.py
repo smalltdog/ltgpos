@@ -22,8 +22,7 @@ def interpolate_freq(y, cur_freq, tar_freq):
     return y_pred
 
 
-def wave_preprocessing(freq, input):
-    input = [float(i) for i in input.split(',')]
+def wave_preprocessing(freq, input: np.ndarray):
     input = interpolate_freq(input, freq, tar_freq=2000000).tolist()
     input = input[:max_length]
     if len(input) < max_length:
@@ -31,7 +30,7 @@ def wave_preprocessing(freq, input):
     return input
 
 
-def slide_window(input:np.array, transformer=None):
+def slide_window(input: np.ndarray, transformer=None):
     if transformer is None:
         transformer = GramianAngularField(image_size=112, method='summation')
 
@@ -56,7 +55,7 @@ def slide_window(input:np.array, transformer=None):
     return imgs
 
 
-def imgtf(imgs:list):
+def imgtf(imgs: list):
     vlm = torch.zeros((3, len(imgs), img_size, img_size))
     tf = transforms.Compose([
              transforms.Resize((img_size, img_size)),
@@ -68,8 +67,8 @@ def imgtf(imgs:list):
     return vlm
 
 
-def wavetf(freq, input, tf):
-    input = wave_preprocessing(freq, input)
+def wavetf(freq: float, input: tuple, tf) -> torch.Tensor:
+    input = wave_preprocessing(freq, np.array(input))
     imgs = slide_window(input, transformer=tf)
     vlm = imgtf(imgs)  # [3, 9, 112, 112]
     return vlm
