@@ -67,11 +67,11 @@ def imgtf(imgs: list):
     return vlm
 
 
-def wavetf(freq: float, input: tuple, tf) -> torch.Tensor:
+def wavetf(freq: float, input: tuple, tf):
     input = wave_preprocessing(freq, np.array(input))
     imgs = slide_window(input, transformer=tf)
     vlm = imgtf(imgs)  # [3, 9, 112, 112]
-    return vlm
+    return vlm.numpy().tolist()
 
 
 def build_tf():
