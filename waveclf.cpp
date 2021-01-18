@@ -25,7 +25,7 @@ void list2vec(PyObject* list, vector<T>& vec)
 WaveClf::WaveClf(const std::string& weight)
 {
     try {
-        *this = torch::jit::load(weight);
+        this->module = torch::jit::load(weight);
     }
     catch (const c10::Error& e) {
         std::cerr << __FILE__ << __LINE__ << ": " << "error loading the model.\n";
@@ -50,9 +50,9 @@ void WaveClf::predict(int freq, vector<double> data)
     Py_DECREF(input_2);
 
     std::vector<torch::jit::IValue> inputs;
-    inputs.push_back(torch::tensor(tensor2vec(input)));
+    inputs.push_back(torch::tensor(input));
 
-    at::Tensor output = this->forward(inputs).toTensor();
+    at::Tensor output = this->module.forward(inputs).toTensor();
     std::cout << output.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << std::endl;
     return;
 }

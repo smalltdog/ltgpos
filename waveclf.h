@@ -12,12 +12,13 @@
 using std::vector;
 
 
-Class WaveClf {
+class WaveClf {
     public:
         WaveClf(const std::string& weight);
         ~WaveClf();
 
         void predict(int freq, vector<double> data);
     private:
+        torch::jit::Module module;
         PyObject* tf;
-}
+};
