@@ -1,27 +1,6 @@
 #include "waveclf.h"
 
 
-template <typename T>
-PyObject* vec2tuple(const vector<T>& vec)
-{
-    PyObject* tuple = PyTuple_New(vec.size());
-    for (int i = 0; i < vec.size(); i++) {
-        PyTuple_SetItem(tuple, i, PyFloat_FromDouble(vec[i]));
-    }
-    return tuple;
-}
-
-
-template <typename T>
-void list2vec(PyObject* list, vector<T>& vec)
-{
-    for (int i = 0; i < PyList_Size(list); i++) {
-        vec.push_back(PyFloat_AsDouble(PyList_GetItem(list, i)));
-    }
-    return;
-}
-
-
 WaveClf::WaveClf(const std::string& weight)
 {
     try {
@@ -31,30 +10,51 @@ WaveClf::WaveClf(const std::string& weight)
         std::cerr << __FILE__ << __LINE__ << ": " << "error loading the model.\n";
     }
 
-    PyImport_AppendInittab("wavetf", PyInit_wavetf);
     Py_Initialize();
-    PyImport_ImportModule("wavetf");
+    if (!Py_IsInitialized()) {
+        std::cerr << __FILE__ << __LINE__ << ": " << "failed to init python env.\n";
+    }
+    PyRun_SimpleString("import sys");
+    PyRun_SimpleString("sys.path.append('./')");
 
-    this->tf = build_tf();
+    PyObject* PyModule = PyImport_ImportModule("wavetf");       // 待调用的文件 wavetf.py
+    if (!PyModule) {
+        std::cerr << __FILE__ << __LINE__ << ": " << "failed to import python module.\n";
+    }
+    this->PyFunc_wavetf = PyObject_GetAttrString(PyModule, "wavetf");
+
+    PyObject* PyFunc_buildtf = PyObject_GetAttrString(PyModule, "build_tf");
+    this->tf = PyObject_CallObject(PyFunc_buildtf, NULL);
 }
 
 
-void WaveClf::predict(int freq, vector<double> data)
+int WaveClf::predict(int freq, std::vector<double> data)
 {
-    PyObject* input_1 = vec2tuple(data);
-    PyObject* input_2 = wavetf(freq, input_1, this->tf);\
-    Py_DECREF(input_1);
+    PyObject* PyArgs = PyTuple_New(3);
+    PyObject* PyInput = PyTuple_New(data.size());
+    for (int i = 0; i < data.size(); i++) {
+        PyTuple_SetItem(PyInput, i, PyFloat_FromDouble(data[i]));
+    }
+    PyTuple_SetItem(PyArgs, 0, PyLong_FromLong(freq));
+    PyTuple_SetItem(PyArgs, 1, PyInput);
+    PyTuple_SetItem(PyArgs, 2, this->tf);
 
-    vector<double> input;
-    list2vec(input_2, input);
-    Py_DECREF(input_2);
+    PyObject* PyRet = PyObject_CallObject(this->PyFunc_wavetf, PyArgs);
+    if (!PyRet) {
+        std::cerr << __FILE__ << __LINE__ << ": " << "PyRet is NULL.\n";
+        return -1;
+    }
+
+    std::vector<double> input;
+    for (int i = 0; i < PyList_Size(PyRet); i++) {
+        input.push_back(PyFloat_AsDouble(PyList_GetItem(PyRet, i)));
+    }
 
     std::vector<torch::jit::IValue> inputs;
-    inputs.push_back(torch::tensor(input));
-
+    inputs.push_back(torch::tensor(input).view({ 1, 3, 9, 112, 112 }));
     at::Tensor output = this->module.forward(inputs).toTensor();
-    std::cout << output.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << std::endl;
-    return;
+    int res = std::get<1>(torch::max(output, 1)).item().toInt();
+    return res;
 }
 
 

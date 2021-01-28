@@ -6,19 +6,14 @@
 #include <Python.h>
 #include <torch/script.h>
 
-#include "wavetf.h"
-
-
-using std::vector;
-
 
 class WaveClf {
     public:
         WaveClf(const std::string& weight);
         ~WaveClf();
-
-        void predict(int freq, vector<double> data);
+        int predict(int freq, std::vector<double> data);
     private:
         torch::jit::Module module;
+        PyObject* PyFunc_wavetf;
         PyObject* tf;
 };
