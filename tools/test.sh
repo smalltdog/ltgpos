@@ -1,7 +1,10 @@
 . tools/pathcfg.sh
 
+rm libs/* test/*.so
+
 $NVCC --compiler-options -fPIC -DTEST -rdc=true -shared \
     src/ltgpos.cu \
+    src/comb_mapper.cu \
     src/grid_search.cu \
     src/json_parser.cu \
     src/geodistance.cu \

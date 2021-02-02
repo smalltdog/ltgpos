@@ -9,4 +9,4 @@ cd $CUR
 
 cd $LTGPOS
 sh tools/build.sh
-[ $? -eq 0 ] || exit 1 && echo "==> Updated to Ltgpos v2.1.8."
+[ $? -eq 0 ] || exit 1 && echo "[Ltgpos] Successfully updated to v2.2.0."

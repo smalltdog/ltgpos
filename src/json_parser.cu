@@ -74,7 +74,7 @@ cJSON* parseJsonStr(const char* jstr, schdata_t* schdata)
         // Assert the diff of seconds < 1 s.
         if (ssr_times[i] < 0) ssr_times[i] += 1e3;
     }
-    involved = (mask << num_ssrs + 1) - 1;
+    involved = (mask << num_ssrs) - 1;
 
     // Filter out outlier sensors.
     F s = (ssr_dom[3] - ssr_dom[2]) * (ssr_dom[1] - ssr_dom[0]);
@@ -104,9 +104,11 @@ cJSON* parseJsonStr(const char* jstr, schdata_t* schdata)
     }
 
     // Generate search domain with expand ratio.
+    F area = (ssr_dom[1] - ssr_dom[0]) * (ssr_dom[3] - ssr_dom[2]);
+    F exp_ratio = area > 0.64 ? gSchDomRatio : sqrt(0.64 / area);
     for (int i = 0; i < 6; i++) {
-        sch_dom[i] = (gSchDomRatio / 2 + 0.5) * ssr_dom[i] -
-                     (gSchDomRatio / 2 - 0.5) * ssr_dom[i % 2 ? i - 1 : i + 1];
+        sch_dom[i] = (exp_ratio / 2 + 0.5) * ssr_dom[i] -
+                     (exp_ratio / 2 - 0.5) * ssr_dom[i % 2 ? i - 1 : i + 1];
     }
 
     schdata->num_ssrs = num_ssrs;

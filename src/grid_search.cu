@@ -134,6 +134,12 @@ void grid_search(ssrinfo_t* sinfos, grdinfo_t* ginfos, schdata_t* schdata)
             dim3 grid(grd_sizes[1]), block(grd_sizes[0]);
             calGirdGoodness2d_G <<<grid, block>>> (*ssrinfo, *grdinfo);
         }
+        cudaError_t err = cudaGetLastError();
+        if (err != cudaSuccess) {
+            printf("%s\n" , cudaGetErrorString(err));
+            out_ans[4] = -1;
+            return;
+        }
         cudaMemcpy(houts, grdinfo->douts, grd_size * sizeof(F), cudaMemcpyDeviceToHost);
 
         min_err = houts[0];

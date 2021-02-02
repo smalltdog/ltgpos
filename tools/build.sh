@@ -12,9 +12,12 @@ fi
 JAVA_INC1="$JAVA_HOME/include/"
 JAVA_INC2="$JAVA_HOME/include/linux"
 
+rm libs/*
+
 $NVCC --compiler-options "-I$JAVA_INC1 -I$JAVA_INC2 -fPIC" -rdc=true -shared \
     demo/LtgposCaller.cpp \
     src/ltgpos.cu \
+    src/comb_mapper.cu \
     src/grid_search.cu \
     src/json_parser.cu \
     src/geodistance.cu \

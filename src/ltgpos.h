@@ -8,6 +8,7 @@
 #include "geodistance.h"
 #include "json_parser.h"
 #include "grid_search.h"
+#include "comb_mapper.h"
 
 
 // // Set configs for calculation utils.

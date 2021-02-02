@@ -12,13 +12,13 @@
 // const int kMaxNumCncrThreads = 28 * 2048;
 
 // Number of CUDA grids set for a single dimension.
-int gMaxGridNum = 768;
+int gMaxGridNum = 625;
 // Number of total CUDA grids set for grid search.
 int gMaxGridSize = gMaxGridNum * gMaxGridNum;
 
 // Expansion ratio for search domain.
 double gSchDomRatio = 1.2;
 // // Threshold for goodness of output results.
-// double gGoodThres = 4;
+double gGoodThres = 40;
 // // Threshold for time delta of output results.
 // double gDtimeThres = 1 / C;

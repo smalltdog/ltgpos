@@ -20,7 +20,7 @@ extern int gMaxGridSize;
 
 // Expansion ratio for search domain.
 extern double gSchDomRatio;
-// // Threshold for goodness of output results.
-// extern double gGoodThres;
+// Threshold for goodness of output results.
+extern double gGoodThres;
 // // Threshold for time delta of output results.
 // extern double gDtimeThres;
