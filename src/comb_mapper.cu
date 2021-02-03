@@ -25,6 +25,7 @@ std::vector<long> comb_mapper(long involved)
                 break;
             }
         }
+        n = 0;
         for (int i = 63; i != 0; i--) {
             if (!(involved & mask << i)) continue;
             involved_sub |= mask << i;
@@ -48,7 +49,7 @@ std::vector<long> comb_mapper(long involved)
                 combs.push_back(involved_sub);
                 involved_sub = 0;
                 n = 0;
-                if (combs.size() == 3) {
+                if (combs.size() == batch - 1) {
                     num_involved_sub = num_involved - num_involved_sub * 4;
                 }
             }

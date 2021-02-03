@@ -105,7 +105,7 @@ cJSON* parseJsonStr(const char* jstr, schdata_t* schdata)
 
     // Generate search domain with expand ratio.
     F area = (ssr_dom[1] - ssr_dom[0]) * (ssr_dom[3] - ssr_dom[2]);
-    F exp_ratio = area > 0.64 ? gSchDomRatio : sqrt(0.64 / area);
+    F exp_ratio = gSchDomRatio * (area > 8 ? 1 : sqrt(8 / area));
     for (int i = 0; i < 6; i++) {
         sch_dom[i] = (exp_ratio / 2 + 0.5) * ssr_dom[i] -
                      (exp_ratio / 2 - 0.5) * ssr_dom[i % 2 ? i - 1 : i + 1];
@@ -142,26 +142,31 @@ char* formatRetJsonStr(schdata_t* schdata, cJSON* jarr)
         all_dist[i] = schdata->is3d ?
                       getGeoDistance3d_H(ssr_locs[i * 3], ssr_locs[i * 3 + 1], ssr_locs[i * 3 + 2],
                                          out_ans[1], out_ans[2], out_ans[3]) :
-                      getGeoDistance2d_H(ssr_locs[i * 3], ssr_locs[i * 3 + 1], out_ans[1], out_ans[2]);
+                      getGeoDistance2d_H(ssr_locs[i * 2], ssr_locs[i * 2 + 1], out_ans[1], out_ans[2]);
         all_dtime[i] = ssr_times[i] - out_ans[0];
         all_dtime[i] += all_dtime[i] < 0 ? 1e3 : 0;
     }
 
-    int num_involved = 0, is_involved[kMaxNumSsrs] = { 0 };
-    F us[kMaxNumSsrs], itdfs[kMaxNumSsrs];
+    int num_involved = 0, is_involved[kMaxNumSsrs] = { 0 }, num_cur = 0;
+    F us[kMaxNumSsrs], itdfs[kMaxNumSsrs], current;
     char* nodes[kMaxNumSsrs];
     for (int i = 0; i < num_ssrs; i++) {
         if (!(involved & mask << i)) continue;
+        jobj = cJSON_GetArrayItem(jarr, i);
         is_involved[i] = 1;
-
         cJSON_GetObjectItem_s(jitem, jobj, "signal_strength");
         us[num_involved] = jitem->valuedouble;
         cJSON_GetObjectItem_s(jitem, jobj, "node");
         nodes[num_involved] = jitem->valuestring;
-        itdfs[num_involved++] = calItdf(all_dist[i], us[i]);
+        itdfs[num_involved] = calItdf(all_dist[i], us[num_involved]);
+        if (all_dist[i] < 150) {
+            current += itdfs[num_involved];
+            ++num_cur;
+        }
+        ++num_involved;
     }
-    qsort(itdfs, num_involved, sizeof(F), cmpItdf);
-    int current = num_involved % 2 ? itdfs[num_involved / 2] : (itdfs[num_involved / 2] + itdfs[num_involved / 2 - 1]) / 2;
+    // qsort(itdfs, num_involved, sizeof(F), cmpItdf);
+    // F current = num_involved % 2 ? itdfs[num_involved / 2] : (itdfs[num_involved / 2] + itdfs[num_involved / 2 - 1]) / 2;
 
     jobj = cJSON_CreateObject();
     cJSON_AddItemToObject(jobj, "datetime", cJSON_CreateString(datetime));
@@ -170,7 +175,7 @@ char* formatRetJsonStr(schdata_t* schdata, cJSON* jarr)
         if (i == 3 && !schdata->is3d) continue;
         cJSON_AddItemToObject(jobj, kJsonKeys[i], cJSON_CreateNumber(out_ans[i]));
     }
-    cJSON_AddItemToObject(jobj, "current", cJSON_CreateNumber(current));
+    cJSON_AddItemToObject(jobj, "current", cJSON_CreateNumber(current / num_cur));
     cJSON_AddItemToObject(jobj, "raw", jarr);
     cJSON_AddItemToObject(jobj, "allDist", cJSON_CreateDoubleArray(all_dist, num_ssrs));
     cJSON_AddItemToObject(jobj, "allDtime", cJSON_CreateDoubleArray(all_dtime, num_ssrs));

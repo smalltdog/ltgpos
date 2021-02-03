@@ -47,7 +47,7 @@ class LtgposCaller {
     }
 
     static {
-        System.load("/home/jhy/ltgpos/libs/libltgpos.so");
+        System.load("/home/jhy/repos/ltgpos/libs/libltgpos.so");
         // System.loadLibrary("ltgpos");
     }
 

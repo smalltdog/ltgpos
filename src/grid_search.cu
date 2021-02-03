@@ -136,7 +136,7 @@ void grid_search(ssrinfo_t* sinfos, grdinfo_t* ginfos, schdata_t* schdata)
         }
         cudaError_t err = cudaGetLastError();
         if (err != cudaSuccess) {
-            printf("%s\n" , cudaGetErrorString(err));
+            fprintf(stderr, "%s(%d): %s.\n", __FILE__, __LINE__, cudaGetErrorString(err));
             out_ans[4] = -1;
             return;
         }
