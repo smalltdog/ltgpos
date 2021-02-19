@@ -24,11 +24,10 @@ cJSON* parseJsonStr(const char* jstr, schdata_t* schdata)
     F* ssr_locs = schdata->ssr_locs;
     F* ssr_times = schdata->ssr_times;
     F* sch_dom = schdata->sch_dom;
-    F ssr_dom[6], ms0;
+    F ssr_dom[4], ms0;
 
-    int num_ssrs = cJSON_GetArraySize(jarr), num_dims = 2;
+    int num_ssrs = cJSON_GetArraySize(jarr);
     long involved = 0;
-    bool is3d = false;
 
     if (num_ssrs < 3) {
         fprintf(stderr, "%s(%d): ltgpos expects number of input sensors >= 3, but got %d.\n",
@@ -44,27 +43,18 @@ cJSON* parseJsonStr(const char* jstr, schdata_t* schdata)
     for (int i = 0; i < num_ssrs; i++) {
         jobj = cJSON_GetArrayItem(jarr, i);
 
-        // j for 3 dimensions of sensor location.
-        for (int j = 0; j < 3; j++) {
-            // Determine whether input is of 3 dimensions.
-            if (i == 0 && j == 2) {
-                jitem = cJSON_GetObjectItem(jobj, kJsonKeys[j + 1]);
-                if (!jitem) continue;
-                num_dims = 3;
-                is3d = true;
-            }
-            if (!is3d && j == 2) continue;
-
+        // j for 2 dimensions of sensor location.
+        for (int j = 0; j < 2; j++) {
             cJSON_GetObjectItem_s(jitem, jobj, kJsonKeys[j + 1]);
-            ssr_locs[i * num_dims + j] = jitem->valuedouble;
+            ssr_locs[i * 2 + j] = jitem->valuedouble;
 
             // Update coordinate domain with min or max values.
             if (!i)
                 ssr_dom[2 * j + 1] = ssr_dom[2 * j] = ssr_locs[j];
-            else if (ssr_locs[i * num_dims + j] > ssr_dom[2 * j + 1])
-                ssr_dom[2 * j + 1] = ssr_locs[i * num_dims + j];
-            else if (ssr_locs[i * num_dims + j] < ssr_dom[2 * j])
-                ssr_dom[2 * j] = ssr_locs[i * num_dims + j];
+            else if (ssr_locs[i * 2 + j] > ssr_dom[2 * j + 1])
+                ssr_dom[2 * j + 1] = ssr_locs[i * 2 + j];
+            else if (ssr_locs[i * 2 + j] < ssr_dom[2 * j])
+                ssr_dom[2 * j] = ssr_locs[i * 2 + j];
         }
 
         // Get datetime & milliseconds.
@@ -78,14 +68,14 @@ cJSON* parseJsonStr(const char* jstr, schdata_t* schdata)
 
     // Filter out outlier sensors.
     F s = (ssr_dom[3] - ssr_dom[2]) * (ssr_dom[1] - ssr_dom[0]);
-    F e0 = avg(ssr_locs, num_ssrs, num_dims, 0);
-    F e1 = avg(ssr_locs, num_ssrs, num_dims, 1);
-    F d0 = var(ssr_locs, num_ssrs, num_dims, 0, e0);
-    F d1 = var(ssr_locs, num_ssrs, num_dims, 1, e1);
+    F e0 = avg(ssr_locs, num_ssrs, 2, 0);
+    F e1 = avg(ssr_locs, num_ssrs, 2, 1);
+    F d0 = var(ssr_locs, num_ssrs, 2, 0, e0);
+    F d1 = var(ssr_locs, num_ssrs, 2, 1, e1);
 
     if (num_ssrs > 3 && (s > 150 + 2.5 * num_ssrs || d0 + d1 > 20 + 0.5 * num_ssrs)) {
         for (int i = 0; i < num_ssrs; i++) {
-            F d = abs(ssr_locs[i*num_dims] - e0) / d0 + abs(ssr_locs[i*num_dims+1] - e1) / d1;
+            F d = abs(ssr_locs[i * 2] - e0) / d0 + abs(ssr_locs[i * 2 + 1] - e1) / d1;
             if (d > 0.5 + 0.05 * num_ssrs) {
                 involved ^= mask << i;
             }
@@ -93,12 +83,12 @@ cJSON* parseJsonStr(const char* jstr, schdata_t* schdata)
 
         for (int i = 0; i < num_ssrs; i++) {
             if (!(involved & mask << i)) continue;
-            for (int j = 0; j < 3; j++) {
+            for (int j = 0; j < 2; j++) {
                 if (i == log2(involved)) ssr_dom[2 * j + 1] = ssr_dom[2 * j] = ssr_locs[j];
-                else if (ssr_locs[i * num_dims + j] > ssr_dom[2 * j + 1])
-                    ssr_dom[2 * j + 1] = ssr_locs[i * num_dims + j];
-                else if (ssr_locs[i * num_dims + j] < ssr_dom[2 * j])
-                    ssr_dom[2 * j] = ssr_locs[i * num_dims + j];
+                else if (ssr_locs[i * 2 + j] > ssr_dom[2 * j + 1])
+                    ssr_dom[2 * j + 1] = ssr_locs[i * 2 + j];
+                else if (ssr_locs[i * 2 + j] < ssr_dom[2 * j])
+                    ssr_dom[2 * j] = ssr_locs[i * 2 + j];
             }
         }
     }
@@ -106,14 +96,13 @@ cJSON* parseJsonStr(const char* jstr, schdata_t* schdata)
     // Generate search domain with expand ratio.
     F area = (ssr_dom[1] - ssr_dom[0]) * (ssr_dom[3] - ssr_dom[2]);
     F exp_ratio = gSchDomRatio * (area > 8 ? 1 : sqrt(8 / area));
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 4; i++) {
         sch_dom[i] = (exp_ratio / 2 + 0.5) * ssr_dom[i] -
                      (exp_ratio / 2 - 0.5) * ssr_dom[i % 2 ? i - 1 : i + 1];
     }
 
     schdata->num_ssrs = num_ssrs;
     schdata->involved = involved;
-    schdata->is3d = is3d;
     return jarr;
 }
 
@@ -139,10 +128,12 @@ char* formatRetJsonStr(schdata_t* schdata, cJSON* jarr)
 
     F all_dist[kMaxNumSsrs], all_dtime[kMaxNumSsrs];
     for (int i = 0; i < num_ssrs; i++) {
-        all_dist[i] = schdata->is3d ?
-                      getGeoDistance3d_H(ssr_locs[i * 3], ssr_locs[i * 3 + 1], ssr_locs[i * 3 + 2],
-                                         out_ans[1], out_ans[2], out_ans[3]) :
-                      getGeoDistance2d_H(ssr_locs[i * 2], ssr_locs[i * 2 + 1], out_ans[1], out_ans[2]);
+        // ===========================
+        // TODO : get distance in 2d or 3d ?
+        // ===========================
+        all_dist[i] = getGeoDistance2d_H(ssr_locs[i * 2], ssr_locs[i * 2 + 1], out_ans[1], out_ans[2]);
+                    // getGeoDistance3d_H(ssr_locs[i * 3], ssr_locs[i * 3 + 1], ssr_locs[i * 3 + 2], out_ans[1], out_ans[2], out_ans[3]);
+
         all_dtime[i] = ssr_times[i] - out_ans[0];
         all_dtime[i] += all_dtime[i] < 0 ? 1e3 : 0;
     }
@@ -168,11 +159,15 @@ char* formatRetJsonStr(schdata_t* schdata, cJSON* jarr)
     // qsort(itdfs, num_involved, sizeof(F), cmpItdf);
     // F current = num_involved % 2 ? itdfs[num_involved / 2] : (itdfs[num_involved / 2] + itdfs[num_involved / 2 - 1]) / 2;
 
+    // ===========================
+    // TODO : altitude calculation
+    // ===========================
+    out_ans[3] = 0;
+
     jobj = cJSON_CreateObject();
     cJSON_AddItemToObject(jobj, "datetime", cJSON_CreateString(datetime));
     // Create cJSON_Item from out_ans.
     for (int i = 0; i < 5; ++i) {
-        if (i == 3 && !schdata->is3d) continue;
         cJSON_AddItemToObject(jobj, kJsonKeys[i], cJSON_CreateNumber(out_ans[i]));
     }
     cJSON_AddItemToObject(jobj, "current", cJSON_CreateNumber(current / num_cur));

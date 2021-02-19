@@ -12,7 +12,7 @@
 // const int kMaxNumCncrThreads = 28 * 2048;
 
 // Number of CUDA grids set for a single dimension.
-int gMaxGridNum = 625;
+int gMaxGridNum = 650;
 // Number of total CUDA grids set for grid search.
 int gMaxGridSize = gMaxGridNum * gMaxGridNum;
 

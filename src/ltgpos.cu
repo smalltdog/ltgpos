@@ -13,7 +13,7 @@ int initSysInfo()
     if (cudaMalloc_s(&gGrdInfos[0].douts, gMaxGridSize)) return 1;
     gGrdInfos[1].douts = gGrdInfos[0].douts;
 
-    if (cudaMalloc_s(&gSsrInfos[0].ssr_locs, kMaxNumSsrs * 3)) return 1;
+    if (cudaMalloc_s(&gSsrInfos[0].ssr_locs, kMaxNumSsrs * 2)) return 1;
     gSsrInfos[1].ssr_locs = gSsrInfos[0].ssr_locs;
     if (cudaMalloc_s(&gSsrInfos[0].ssr_times, kMaxNumSsrs)) return 1;
     gSsrInfos[1].ssr_times = gSsrInfos[0].ssr_times;

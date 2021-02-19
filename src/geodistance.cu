@@ -41,12 +41,12 @@ __device__ F getGeoDistance2d_D(F lat1, F lon1, F lat2, F lon2)
 }
 
 
-__device__ F getGeoDistance3d_D(F lat1, F lon1, F lat2, F lon2, F asl1, F asl2)
-{
-    F dist = getGeoDistance2d_D(lat1, lon1, lat2, lon2);
-    F dasl = (asl1 - asl2) * 100;
-    return sqrt(dist * dist + dasl * dasl);
-}
+// __device__ F getGeoDistance3d_D(F lat1, F lon1, F lat2, F lon2, F asl1, F asl2)
+// {
+//     F dist = getGeoDistance2d_D(lat1, lon1, lat2, lon2);
+//     F dasl = (asl1 - asl2) * 100;
+//     return sqrt(dist * dist + dasl * dasl);
+// }
 
 
 // __device__ F getCartesianDistance2d_D(F x1, F y1, F x2, F y2)

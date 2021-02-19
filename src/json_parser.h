@@ -13,10 +13,9 @@
 typedef struct schdata {
     int num_ssrs;
     long involved;
-    bool is3d;
-    F ssr_locs[64 * 3];
+    F ssr_locs[64 * 2];
     F ssr_times[64];
-    F sch_dom[6];
+    F sch_dom[4];
     F out_ans[5];
 } schdata_t;
 

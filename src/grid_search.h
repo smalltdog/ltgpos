@@ -18,15 +18,14 @@
 typedef struct ssrinfo {
     int num_ssrs;
     long involved;
-    bool is3d;
     F* ssr_locs;
     F* ssr_times;
 } ssrinfo_t;
 
 
 typedef struct grdinfo {
-    F sch_dom[6];
-    F grd_inv[3];
+    F sch_dom[4];
+    F grd_inv[2];
     F* houts;
     F* douts;
 } grdinfo_t;
