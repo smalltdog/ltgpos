@@ -37,6 +37,7 @@ int cmpItdf(const void* a, const void* b)
 }
 
 
+// Fake logarithm :)
 int log2(long n)
 {
     for (int i = 0; i < sizeof(n) * 8; i++) {

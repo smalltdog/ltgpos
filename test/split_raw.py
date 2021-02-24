@@ -7,7 +7,7 @@ dst = './dst.csv'
 
 
 def round6(value):
-    return(round(value, 6))
+    return round(value, 6)
 
 
 df = pd.read_csv(src, sep=',')

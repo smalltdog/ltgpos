@@ -50,8 +50,9 @@ std::vector<long> comb_mapper(long involved)
                 involved_sub = 0;
                 n = 0;
                 if (combs.size() == batch - 1) {
-                    num_involved_sub = num_involved - num_involved_sub * 4;
+                    num_involved_sub = num_involved - num_involved_sub * (batch - 1);
                 }
+                else if (combs.size() == batch) break;
             }
         }
     }

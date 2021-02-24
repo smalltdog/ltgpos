@@ -2,6 +2,7 @@ jdk*
 
 test/*.so
 test/*.out
+test/data/input_81626.csv
 
 __pycache__
 *.pyc

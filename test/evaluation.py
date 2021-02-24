@@ -2,9 +2,9 @@ import pandas as pd
 from geodistance import get_geodistance
 
 
-label = 'test/label.csv'
+label = 'test/data/label_1036.csv'
 output = 'test/output.csv'
-resanal = 'test/resanal.csv'
+resanal = 'test/data/resanal_1036.csv'
 
 
 df_l = pd.read_csv(label, sep='\t', header=None)

@@ -1,13 +1,12 @@
-#%%
 import pandas as pd
 import argparse
 
 
-input = 'test/input.csv'
-label = 'test/label.csv'
+input = 'test/data/input.csv'
+label = 'test/data/label.csv'
 
-output = 'test/output.csv'
-resanal = 'test/resanal.csv'
+output = 'test/data/output.csv'
+resanal = 'test/data/resanal.csv'
 
 
 parser = argparse.ArgumentParser()

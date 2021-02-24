@@ -14,6 +14,6 @@ def get_geodistance(lat1, lon1, lat2, lon2):
 
     xx = acos(sin(pa) * sin(pb) + cos(pa) * cos(pb) * cos(rad_lon1 - rad_lon2))
     c1 = (sin(xx) - xx) * (sin(pa) + sin(pb)) ** 2 / cos(xx / 2) ** 2
-    c2 = (sin(xx) + xx) * (sin(pa) - sin(pb)) ** 2 / sin(xx / 2) ** 2
+    c2 = (sin(xx) + xx) * (sin(pa) - sin(pb)) ** 2 / cos(xx / 2) ** 2
     dr = oblate / 8 * (c1 - c2)
     return ra * (xx + dr)

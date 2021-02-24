@@ -19,7 +19,6 @@ int main(int argc, char** argv)
     while (!feof(fp)) {
         // if (i == 1) break;
         if (!fgets(buf, sizeof(buf), fp)) break;
-        // if (i == 1035)
         // printf("%d", i);
         ltgpos(buf);
         i++;

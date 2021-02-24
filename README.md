@@ -53,3 +53,8 @@ cd demo/
 
 ## TODO
 
+- [ ] grid_search : grdinv 1.02
+- [ ] current validation
+- [ ] can comb mapper substitute outlier?
+- [ ] assert num_involved >= 3 before calculation
+- [ ] 在不做筛除的情况下，我们的结果是否比原系统的结果更好？
