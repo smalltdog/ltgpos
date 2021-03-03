@@ -14,10 +14,10 @@
 typedef struct schdata {
     int num_ssrs;
     long involved;
-    F ssr_locs[64 * 2];
-    F ssr_times[64];
-    F sch_dom[4];
-    F out_ans[5];
+    double ssr_locs[kMaxNumSsrs * 2];
+    double ssr_times[kMaxNumSsrs];
+    double sch_dom[4];
+    double out_ans[5];
 } schdata_t;
 
 

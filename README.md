@@ -22,13 +22,17 @@ bash tools/build.sh
 bash tools/test.sh -i /path/to/input (-o)
 ```
 
+评测计算结果
+
+```shell
+python test/evaluation.py --no xxx
+```
+
 根据计算结果对输入数据进行筛选
 
 ```shell
-python test/badcase.py --idx 2
+python test/badcase.py --no xxx
 ```
-
-`input_2.csv`：优度和距离误差都较大的数据
 
 ### 编译并运行 Java Demo
 
@@ -53,8 +57,6 @@ cd demo/
 
 ## TODO
 
-- [ ] grid_search : grdinv 1.02
-- [ ] current validation
-- [ ] can comb mapper substitute outlier?
 - [ ] assert num_involved >= 3 before calculation
-- [ ] 在不做筛除的情况下，我们的结果是否比原系统的结果更好？
+- [ ] is our results better than original results when not with outlier filtering
+- [ ] fit on 81626 data: (GoodThres, GenSchDom in GrdSch, SchDomExpRatio)

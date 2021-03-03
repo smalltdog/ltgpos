@@ -21,7 +21,6 @@ $NVCC --compiler-options "-I$JAVA_INC1 -I$JAVA_INC2 -fPIC" -rdc=true -shared \
     src/grid_search.cu \
     src/json_parser.cu \
     src/geodistance.cu \
-    src/configs.cu \
     src/utils.cu \
     src/cJSON.c \
     -o libs/libltgpos.so

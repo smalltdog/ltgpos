@@ -2,32 +2,31 @@ import pandas as pd
 import argparse
 
 
-input = 'test/data/input.csv'
-label = 'test/data/label.csv'
-
-output = 'test/data/output.csv'
-resanal = 'test/data/resanal.csv'
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--idx", help="display a square of a given number")
-args = parser.parse_args()
-
-
 def cond(goodness, distance):
     if goodness > 40 and distance > 20:
         return True
     return False
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--no', type=str)
+parser.add_argument('--no_out', type=str)
+args = parser.parse_args()
+
+input = 'test/data/input_' + args.no + '.csv'
+label = 'test/data/label_' + args.no + '.csv'
+output = 'test/data/output_' + args.no + '.csv'
+resanal = 'test/data/resanal_' + args.no + '.csv'
+
+
 df_i = pd.read_csv(input, sep='\t', header=None)
 df_l = pd.read_csv(label, sep='\t', header=None)
 df_r = pd.read_csv(resanal, sep=',', header=None)
 
+input = 'test/data/input_' + args.no_out + '.csv'
+label = 'test/data/label_' + args.no_out + '.csv'
+
 rowidxs = [row[0] for row in df_r.itertuples() if cond(row[5], row[6])]
 
-input2 = input.split('.')[0] + '_' + args.idx + '.csv'
-label2 = label.split('.')[0] + '_' + args.idx + '.csv'
-
-df_i.iloc[rowidxs].to_csv(input2, index=False, header=False)
-df_l.iloc[rowidxs].to_csv(label2, sep ='\t', index=False, header=False, float_format='%.6f')
+df_i.iloc[rowidxs].to_csv(input, index=False, header=False)
+df_l.iloc[rowidxs].to_csv(label, sep ='\t', index=False, header=False, float_format='%.6f')

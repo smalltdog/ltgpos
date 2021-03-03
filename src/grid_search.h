@@ -18,17 +18,19 @@
 typedef struct ssrinfo {
     int num_ssrs;
     long involved;
-    F* ssr_locs;
-    F* ssr_times;
+    double* ssr_locs;
+    double* ssr_times;
 } ssrinfo_t;
 
 
 typedef struct grdinfo {
-    F sch_dom[4];
-    F grd_inv[2];
-    F* houts;
-    F* douts;
+    double sch_dom[4];
+    double grd_inv[2];
+    double* houts;
+    double* douts;
 } grdinfo_t;
 
 
 void grid_search(ssrinfo_t* sinfos, grdinfo_t* ginfos, schdata_t* schdata);
+
+void grid_search_slide(ssrinfo_t* sinfos, grdinfo_t* ginfos, schdata_t* schdata);

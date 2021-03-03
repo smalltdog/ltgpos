@@ -1,15 +1,10 @@
 #include "comb_mapper.h"
 
-const long mask = 0x1;
-
 
 std::vector<long> comb_mapper(long involved)
 {
     std::vector<long> combs;
-    int num_involved = 0;
-    for (int i = 0; i < 64; i++) {
-        if (involved & mask << i) ++num_involved;
-    }
+    int num_involved = get_num_involved(involved);
     if (num_involved <= 3) return combs;
 
     if (num_involved < 6) {

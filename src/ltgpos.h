@@ -11,10 +11,6 @@
 #include "comb_mapper.h"
 
 
-// // Set configs for calculation utils.
-// // Returns 0 if re-init sysinfo successfully.
-// int set_cfg(int num_sensors, int grid_size);
-
 // Returns JSON-formatted string of output results.
 // String returned should be deallocated after use.
 char* ltgpos(char* str);

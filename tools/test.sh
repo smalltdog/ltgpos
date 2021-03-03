@@ -8,7 +8,6 @@ $NVCC --compiler-options -fPIC -DTEST -rdc=true -shared \
     src/grid_search.cu \
     src/json_parser.cu \
     src/geodistance.cu \
-    src/configs.cu \
     src/utils.cu \
     src/cJSON.c \
     -o libs/libltgpos.so
@@ -29,7 +28,7 @@ while getopts "i:o" arg; do
 done
 
 if [ "$OUT" = true ]; then
-	test/test.out $IN > test/output.csv
+	test/test.out $IN > test/data/output.csv
 else
 	test/test.out $IN
 fi

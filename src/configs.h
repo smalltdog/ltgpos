@@ -6,21 +6,19 @@ static const int kMaxNumSsrs = 64;
 // Number of search times.
 static const int kNumSchs = 2;
 // Number of extended intervals for next search.
-static const int kNxtSchDomInvs = 2;
-
-// Max number of threads on GPU.
-static const int kMaxNumThreads = 512 * 65535;
-// // Max number of concurrent threads on GTX 1080 Ti.
-// extern const int kMaxNumCncrThreads;
+static const int kNumNxtSchInvs = 2;
 
 // Number of CUDA grids set for a single dimension.
-extern int gMaxGridNum;
+static const int kMaxGrdSize = 1024;
 // Number of total CUDA grids set for grid search.
-extern int gMaxGridSize;
+static const int kMaxGrdNum = kMaxGrdSize * kMaxGrdSize;
 
-// Expansion ratio for search domain.
-extern double gSchDomRatio;
-// Threshold for goodness of output results.
-extern double gGoodThres;
-// // Threshold for time delta of output results.
-// extern double gDtimeThres;
+// // Max number of threads on GPU.
+// static const int kMaxNumThreads = 512 * 65535;
+// // Max number of concurrent threads on GTX 1080 Ti.
+// static const int kMaxNumConcurThreads = 28 * 2048;
+
+// Expansion ratio for search domain generation.
+static const double kSchDomGenRatio = 1.2;
+// Threshold for goodness of search results.
+static const double kGoodThres = 20;

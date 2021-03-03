@@ -5,7 +5,7 @@ class LtgposCaller {
 
     public static void main(String[] args) {
         LtgposCaller instance = new LtgposCaller();
-        String result;
+
         String[] inputs = new String[] {
             "[{\"node\":\"32-101\",\"datetime\":\"2020-08-20 15:51:36\",\"microsecond\":6060146,\"latitude\":29.16743888972841,\"signal_strength\":-61.6,\"longitude\":114.38147944399925},{\"node\":\"32-118\",\"datetime\":\"2020-08-20 15:51:36\",\"microsecond\":6060911,\"latitude\":29.339763332039986,\"signal_strength\":-22.0,\"longitude\":115.77484722100819},{\"node\":\"32-117\",\"datetime\":\"2020-08-20 15:51:36\",\"microsecond\":6061539,\"latitude\":28.70378639030727,\"signal_strength\":-28.4,\"longitude\":115.95272888983672}]",
             "[{\"node\":\"31-118\",\"datetime\":\"2020-08-20 15:03:55\",\"microsecond\":9444746,\"latitude\":30.726473052990595,\"signal_strength\":-339.4,\"longitude\":115.6742733322709},{\"node\":\"32-118\",\"datetime\":\"2020-08-20 15:03:55\",\"microsecond\":9449863,\"latitude\":29.339763332039986,\"signal_strength\":-34.1,\"longitude\":115.77484722100819},{\"node\":\"32-117\",\"datetime\":\"2020-08-20 15:03:55\",\"microsecond\":9452257,\"latitude\":28.70378639030727,\"signal_strength\":-21.7,\"longitude\":115.95272888983672}]",
@@ -40,7 +40,7 @@ class LtgposCaller {
         };
 
         for (int i = 0; i < inputs.length; i++) {
-            result = instance.ltgpos(inputs[i]);
+            String result = instance.ltgpos(inputs[i]);
             System.out.println(result + '\n');
         }
         instance.freeSysInfo();
@@ -48,7 +48,6 @@ class LtgposCaller {
 
     static {
         System.load("/home/jhy/repos/ltgpos/libs/libltgpos.so");
-        // System.loadLibrary("ltgpos");
     }
 
     protected void finalize() {
