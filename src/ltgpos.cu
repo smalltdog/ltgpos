@@ -31,7 +31,7 @@ void freeSysInfo()
 long dac_search(schdata_t& d)
 {
     long involved = 0, prev_involved;
-    // printf("%lx\n", d.involved);
+    // printf("beg: %lx\n", d.involved);
     std::vector<long> combs = comb_mapper(d.involved);
     for (int i = 0; i != combs.size(); i++) {
         // printf("sub: %lx\n", combs[i]);

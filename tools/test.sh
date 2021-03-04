@@ -1,6 +1,6 @@
 . tools/pathcfg.sh
 
-rm libs/* test/*.so
+rm libs/* test/*.so test/*.out
 
 $NVCC --compiler-options -fPIC -DTEST -rdc=true -shared \
     src/ltgpos.cu \

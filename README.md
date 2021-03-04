@@ -57,6 +57,7 @@ cd demo/
 
 ## TODO
 
-- [ ] assert num_involved >= 3 before calculation
-- [ ] is our results better than original results when not with outlier filtering
+- [ ] random shuffle in comb generation
+- [ ] test for kNumNxtSchInvs
+- [ ] 69 badcase analysis
 - [ ] fit on 81626 data: (GoodThres, GenSchDom in GrdSch, SchDomExpRatio)

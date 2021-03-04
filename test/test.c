@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 
 #include "../src/ltgpos.h"
 
@@ -15,16 +16,24 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    clock_t start = clock();
+
     int i = 0;
     while (!feof(fp)) {
         // if (i == 1) break;
         if (!fgets(buf, sizeof(buf), fp)) break;
-        // printf("%d", i);
+        // printf("=> %d\n", i);
+        // if (i == 1)
         ltgpos(buf);
         i++;
     }
+    
+    clock_t end = clock();
 
     freeSysInfo();
     fclose(fp);
+
+    fprintf(stderr, "=> total time: %lf s\n", (double)(end-start) / CLOCKS_PER_SEC);
+    fprintf(stderr, "=> avg time: %lf s\n", (double)(end-start) / i / CLOCKS_PER_SEC);
     return 0;
 }

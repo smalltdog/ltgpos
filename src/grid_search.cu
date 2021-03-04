@@ -27,6 +27,13 @@ __global__ void calGirdGoodness2d_G(ssrinfo_t sinfo, grdinfo_t ginfo)
 
 void grid_search(ssrinfo_t* ssrinfo, grdinfo_t* grdinfo, schdata_t* schdata)
 {
+    if (get_num_involved(schdata->involved) < 3) {
+        // fflush(stdout);
+        // fprintf(stderr, "%s(%d): grid search expects number of involved sensors >= 3, but got %d.\n",
+        //         __FILE__, __LINE__, get_num_involved(schdata->involved));
+        schdata->out_ans[4] = INFINITY;
+        return;
+    }
     ssrinfo->num_ssrs = schdata->num_ssrs;
     ssrinfo->involved = schdata->involved;
     double* ssr_locs = schdata->ssr_locs;
@@ -74,7 +81,7 @@ void grid_search(ssrinfo_t* ssrinfo, grdinfo_t* grdinfo, schdata_t* schdata)
         //             cudaError_t err = cudaGetLastError();
         //             if (err != cudaSuccess) {
         //                 fprintf(stderr, "%s(%d): %s.\n", __FILE__, __LINE__, cudaGetErrorString(err));
-        //                 out_ans[4] = -1;
+        //                 out_ans[4] = INFINITY;
         //                 return;
         //             }
         //             cudaMemcpy(houts, grdinfo->douts, kMaxGrdNum * sizeof(double), cudaMemcpyDeviceToHost);
@@ -103,7 +110,7 @@ void grid_search(ssrinfo_t* ssrinfo, grdinfo_t* grdinfo, schdata_t* schdata)
         cudaError_t err = cudaGetLastError();
         if (err != cudaSuccess) {
             fprintf(stderr, "%s(%d): %s.\n", __FILE__, __LINE__, cudaGetErrorString(err));
-            out_ans[4] = -1;
+            out_ans[4] = INFINITY;
             return;
         }
         cudaMemcpy(houts, grdinfo->douts, kMaxGrdNum * sizeof(double), cudaMemcpyDeviceToHost);
