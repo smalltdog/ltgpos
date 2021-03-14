@@ -117,6 +117,8 @@ char* formatRetJsonStr(schdata_t* schdata, cJSON* jarr)
         }
     }
     if (num_cal_alt) out_ans[3] /= num_cal_alt;
+    if (out_ans[3] > 20) out_ans[3] = 20;
+
     if (num_cal_cur > 1) {
         current /= num_cal_cur;
     } else if (all_dist[1] > 150) {

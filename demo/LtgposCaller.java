@@ -39,10 +39,14 @@ class LtgposCaller {
             "[{\"node\":\"61-22\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":683967,\"latitude\":52.94086305745376,\"signal_strength\":-42.4,\"longitude\":122.58430472389465},{\"node\":\"31-110\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":684795,\"latitude\":29.70429972497157,\"signal_strength\":-89.2,\"longitude\":112.4043805578968},{\"node\":\"33-108\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":684963,\"latitude\":29.12054888894117,\"signal_strength\":-76.1,\"longitude\":110.53723805382414},{\"node\":\"31-120\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":685726,\"latitude\":30.173338331334573,\"signal_strength\":-83.8,\"longitude\":111.07469444431787},{\"node\":\"31-103\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":687953,\"latitude\":30.462719443478818,\"signal_strength\":-39.8,\"longitude\":112.92030027847166},{\"node\":\"31-108\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":690591,\"latitude\":29.833062220496814,\"signal_strength\":-40.2,\"longitude\":114.31401860824836},{\"node\":\"33-114\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":692206,\"latitude\":26.773577780011802,\"signal_strength\":-25.9,\"longitude\":113.52880583625476},{\"node\":\"31-112\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":693110,\"latitude\":32.11527249998908,\"signal_strength\":-19.3,\"longitude\":112.76593249961724},{\"node\":\"31-113\",\"datetime\":\"2020-08-20 15:15:42\",\"microsecond\":694772,\"latitude\":31.17199027509152,\"signal_strength\":-20.9,\"longitude\":115.0209458362142}]"
         };
 
+        // long start = System.currentTimeMillis();
         for (int i = 0; i < inputs.length; i++) {
             String result = instance.ltgpos(inputs[i]);
             System.out.println(result + '\n');
         }
+        // long end = System.currentTimeMillis();
+        // System.out.println(end - start);
+        // System.out.println(inputs.length);
         instance.freeSysInfo();
     }
 

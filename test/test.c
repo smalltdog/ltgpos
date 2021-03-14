@@ -17,17 +17,12 @@ int main(int argc, char** argv)
     }
 
     clock_t start = clock();
-
     int i = 0;
     while (!feof(fp)) {
-        // if (i == 1) break;
         if (!fgets(buf, sizeof(buf), fp)) break;
-        // printf("=> %d\n", i);
-        // if (i == 1)
         ltgpos(buf);
         i++;
     }
-    
     clock_t end = clock();
 
     freeSysInfo();

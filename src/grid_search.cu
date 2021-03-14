@@ -10,17 +10,26 @@ __global__ void calGirdGoodness2d_G(ssrinfo_t sinfo, grdinfo_t ginfo)
 
     double x = ginfo.sch_dom[0] + ginfo.grd_inv[0] * threadIdx.x;
     double y = ginfo.sch_dom[2] + ginfo.grd_inv[1] * blockIdx.x;
-    double t0, dt, err = 0;
+    double dt[kMaxNumSsrs];
+    double t0 = 0, err = 0;
+
+    int num_involved = 0;
+    for (int i = 0; i < num_ssrs; i++) {
+        if (!(involved & mask << i)) continue;
+        ++num_involved;
+        dt[i] = getGeoDistance2d_D(ssr_locs[i * 2], ssr_locs[i * 2 + 1], x, y) / C;
+        // Is referrence sensor
+        // if (involved & -involved & mask << i) { t0 = dt[i]; continue; }
+        t0 += dt[i] - ssr_times[i];
+    }
+    t0 /= num_involved;
 
     for (int i = 0; i < num_ssrs; i++) {
         if (!(involved & mask << i)) continue;
-        dt = getGeoDistance2d_D(ssr_locs[i * 2], ssr_locs[i * 2 + 1], x, y) / C;
-
-        if (involved & -involved & mask << i) { t0 = dt; continue; }  // Is referrence sensor
-        dt -= t0 + ssr_times[i];
-        err += dt * dt * 1e6;
+        dt[i] -= t0 + ssr_times[i];
+        err += dt[i] * dt[i] * 1e6;
     }
-    err /= num_ssrs - 2;
+    err /= num_involved - 2;
     ginfo.douts[blockIdx.x * blockDim.x + threadIdx.x] = err;
 }
 

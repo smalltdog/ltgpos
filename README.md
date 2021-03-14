@@ -55,6 +55,24 @@ cd demo/
 /path/to/java LtgposCaller
 ```
 
+## Deployment
+
+`tools/pathcfg.sh` :
+
+```bash
+# set path to your jdk
+JAVA_HOME=~/repos/ltgpos/jdk1.8.0_271
+
+# set path to your repos
+LTGPOS=~/ltgpos
+```
+
+`demo/LtgposCaller.java` :
+
+```bash
+System.load("/home/yftx02/ltgpos/libs/libltgpos.so");
+```
+
 ## TODO
 
 - [ ] random shuffle in comb generation
