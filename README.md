@@ -55,7 +55,7 @@ cd demo/
 /path/to/java LtgposCaller
 ```
 
-## Deployment
+## Deploy
 
 `tools/pathcfg.sh` :
 
@@ -74,8 +74,3 @@ System.load("/home/yftx02/ltgpos/libs/libltgpos.so");
 ```
 
 ## TODO
-
-- [ ] random shuffle in comb generation
-- [ ] test for kNumNxtSchInvs
-- [ ] 69 badcase analysis
-- [ ] fit on 81626 data: (GoodThres, GenSchDom in GrdSch, SchDomExpRatio)
