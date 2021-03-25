@@ -13,7 +13,7 @@ class WaveClf {
         ~WaveClf();
         int predict(int freq, std::vector<double> data);
     private:
-        torch::jit::Module module;
+        // torch::jit::Module module;
         PyObject* PyFunc_wavetf;
         PyObject* tf;
 };

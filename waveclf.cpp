@@ -3,12 +3,13 @@
 
 WaveClf::WaveClf(const std::string& weight)
 {
-    try {
-        this->module = torch::jit::load(weight);
-    }
-    catch (const c10::Error& e) {
-        std::cerr << __FILE__ << __LINE__ << ": " << "error loading the model.\n";
-    }
+    initModule(weight);
+    // try {
+    //     this->module = torch::jit::load(weight);
+    // }
+    // catch (const c10::Error& e) {
+    //     std::cerr << __FILE__ << __LINE__ << ": " << "error loading the model.\n";
+    // }
 
     Py_Initialize();
     if (!Py_IsInitialized()) {
@@ -17,7 +18,7 @@ WaveClf::WaveClf(const std::string& weight)
     PyRun_SimpleString("import sys");
     PyRun_SimpleString("sys.path.append('./')");
 
-    PyObject* PyModule = PyImport_ImportModule("wavetf");       // 待调用的文件 wavetf.py
+    PyObject* PyModule = PyImport_ImportModule("wavetf");
     if (!PyModule) {
         std::cerr << __FILE__ << __LINE__ << ": " << "failed to import python module.\n";
     }
@@ -49,12 +50,12 @@ int WaveClf::predict(int freq, std::vector<double> data)
     for (int i = 0; i < PyList_Size(PyRet); i++) {
         input.push_back(PyFloat_AsDouble(PyList_GetItem(PyRet, i)));
     }
-
-    std::vector<torch::jit::IValue> inputs;
-    inputs.push_back(torch::tensor(input).view({ 1, 3, 9, 112, 112 }));
-    at::Tensor output = this->module.forward(inputs).toTensor();
-    int res = std::get<1>(torch::max(output, 1)).item().toInt();
-    return res;
+    return forwardModule(input);
+    // std::vector<torch::jit::IValue> inputs;
+    // inputs.push_back(torch::tensor(input).view({ 1, 3, 9, 112, 112 }));
+    // at::Tensor output = this->module.forward(inputs).toTensor();
+    // int res = std::get<1>(torch::max(output, 1)).item().toInt();
+    // return res;
 }
 
 
