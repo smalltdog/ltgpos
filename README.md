@@ -34,6 +34,12 @@ python test/evaluation.py --no xxx
 python test/badcase.py --no xxx
 ```
 
+将输出结果划分成数据与 JSON 字符串
+
+```shell
+python test/split_output.py --no xxx
+```
+
 ### 编译并运行 Java Demo
 
 运行以下 Shell 脚本
@@ -57,17 +63,19 @@ cd demo/
 
 ## Deploy
 
-`tools/pathcfg.sh` :
+Included dirs: `demo/`, `src/`, `tools/`
+
+Modify `tools/pathcfg.sh` :
 
 ```bash
 # set path to your jdk
-JAVA_HOME=~/repos/ltgpos/jdk1.8.0_271
+JAVA_HOME=~/ltgpos/jdk1.8.0_271
 
 # set path to your repos
 LTGPOS=~/ltgpos
 ```
 
-`demo/LtgposCaller.java` :
+Modify `demo/LtgposCaller.java` :
 
 ```bash
 System.load("/home/yftx02/ltgpos/libs/libltgpos.so");

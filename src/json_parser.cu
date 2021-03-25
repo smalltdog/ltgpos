@@ -147,5 +147,9 @@ char* formatRetJsonStr(schdata_t* schdata, cJSON* jarr)
 
     char* ret_str = cJSON_PrintUnformatted(jobj);
     cJSON_Delete(jobj);
+    #ifdef TEST
+    printf("%.6lf, %.6lf, %.4lf, %.4lf, %.4lf\n", out_ans[1], out_ans[2], out_ans[3], out_ans[4], current);
+    // printf("%.6lf; %.6lf; %.4lf; %.4lf; %.4lf; %s\n", out_ans[1], out_ans[2], out_ans[3], out_ans[4], current, ret_str);
+    #endif
     return ret_str;
 }

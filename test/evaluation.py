@@ -12,9 +12,23 @@ output = 'test/data/output_' + args.no + '.csv'
 resanal = 'test/data/resanal_' + args.no + '.csv'
 
 
-df_l = pd.read_csv(label, sep='\t', header=None)
-df_o = pd.read_csv(output, sep='  ', header=None)
+def hist(df: pd.DataFrame, attr: str, box: float, overflow: float):
+    print(attr)
+    cur = 0
+    while cur < overflow:
+        print(f'{cur + box:.1f}\t{sum((cur <= df).multiply(df < cur + box)) / len(df) * 100:.2f}')
+        cur += box
+    print(f'>{overflow}\t{sum(cur <= df) / len(df) * 100:.2f}\n')
+
+
+df_l = pd.read_csv(label, sep=',', header=None)
+df_o = pd.read_csv(output, sep=',', header=None)
 df = pd.concat([df_l, df_o], axis=1)
-df.columns = [0, 1, 2, 3, 4]
-df[5] = [get_geodistance(row[1], row[2], row[3], row[4]) for row in df.itertuples()]
+df[df.shape[1]] = [get_geodistance(row[1], row[2], row[4], row[5]) if df.shape[1] != 7 else
+                   get_geodistance(row[1], row[2], row[3], row[4]) for row in df.itertuples()]      # deprecated
 df.to_csv(resanal, sep =',', index=False, header=False, float_format='%.4f')
+
+hist(df.iloc[:, -1], 'Dist', box=0.2, overflow=5)
+if df.shape[1] != 8:
+    df = df[df.iloc[:, -1] < 1.6]
+    hist(abs((df.iloc[:, 7] - df.iloc[:, 2]) / df.iloc[:, 2]), 'DCurrent', box=0.2, overflow=1)

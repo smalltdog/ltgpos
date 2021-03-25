@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     freeSysInfo();
     fclose(fp);
 
-    fprintf(stderr, "=> total time: %lf s\n", (double)(end-start) / CLOCKS_PER_SEC);
-    fprintf(stderr, "=> avg time: %lf s\n", (double)(end-start) / i / CLOCKS_PER_SEC);
+    fprintf(stderr, "total time: %lf s\n", (double)(end-start) / CLOCKS_PER_SEC);
+    fprintf(stderr, "avg time: %lf s\n", (double)(end-start) / i / CLOCKS_PER_SEC);
     return 0;
 }

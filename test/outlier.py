@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from math import sqrt
-from data import *
 
 
 def area(s):
@@ -25,18 +24,11 @@ for i, data in enumerate(datas):
     if not (area(data) >= 200):
         continue
 
-
     fig, axs = plt.subplots(1, 2)
     mask = np.array([True for _ in range(len(data))])
 
-    print(i)
-    print(data)
-
-    print("\n")
-
-    # if len(data) > 8:
     for i, d in enumerate(data):
-        print("==> ", d[0], d[1])
+        print("  ", d[0], d[1])
     #     if abs(d[0] - avg0) / var0 + abs(d[1] - avg1) / var1 > 0.5 + 0.05 * len(data):
     #         mask[i] = False
     # else:
@@ -48,4 +40,3 @@ for i, data in enumerate(datas):
     axs[0].scatter(data[:, 0], data[:, 1])
     axs[1].scatter(data[mask][:, 0], data[mask][:, 1])
     plt.show()
-    # print('\n')

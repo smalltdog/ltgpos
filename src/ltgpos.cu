@@ -70,17 +70,6 @@ char* ltgpos(char* str)
         grid_search(&gSsrInfo, &gGrdInfo, &schdata);
     }
 
-    #ifdef TEST
-    double* out_ans = schdata.out_ans;
-    // double* sch_dom = schdata.sch_dom;
-    // double* ssr_locs = schdata.ssr_locs;
-    printf("%7.4lf  %8.4lf  %.4lf\n", out_ans[1], out_ans[2], out_ans[4]);
-    // printf("%7.4lf  %7.4lf  %8.4lf %8.4lf\n", sch_dom[0], sch_dom[1], sch_dom[2], sch_dom[3]);
-    // printf("%.2lf\n", (sch_dom[1] - sch_dom[0]) * (sch_dom[3] - sch_dom[2]));
-    // printf("%d\n", schdata.num_ssrs);
-    // for (int i = 0; i < schdata.num_ssrs; i++) printf("%.4lf, %.4lf\n", ssr_locs[i * 2], ssr_locs[i * 2 + 1]);
-    #endif
-
     // Ensure the string returned is deallocated after use.
     return formatRetJsonStr(&schdata, jarr);
 }
