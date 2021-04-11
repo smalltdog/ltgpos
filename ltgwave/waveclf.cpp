@@ -1,15 +1,9 @@
 #include "waveclf.h"
 
 
-WaveClf::WaveClf(const std::string& weight)
+WaveClf::WaveClf(const std::string& model)
 {
-    initModule(weight);
-    // try {
-    //     this->module = torch::jit::load(weight);
-    // }
-    // catch (const c10::Error& e) {
-    //     std::cerr << __FILE__ << __LINE__ << ": " << "error loading the model.\n";
-    // }
+    CreateSessionInfo(model);
 
     Py_Initialize();
     if (!Py_IsInitialized()) {
@@ -46,19 +40,15 @@ int WaveClf::predict(int freq, std::vector<double> data)
         return -1;
     }
 
-    std::vector<double> input;
+    std::vector<float> input;
     for (int i = 0; i < PyList_Size(PyRet); i++) {
-        input.push_back(PyFloat_AsDouble(PyList_GetItem(PyRet, i)));
+        input.push_back((float)PyFloat_AsDouble(PyList_GetItem(PyRet, i)));
     }
-    return forwardModule(input);
-    // std::vector<torch::jit::IValue> inputs;
-    // inputs.push_back(torch::tensor(input).view({ 1, 3, 9, 112, 112 }));
-    // at::Tensor output = this->module.forward(inputs).toTensor();
-    // int res = std::get<1>(torch::max(output, 1)).item().toInt();
-    // return res;
+    return RunSession(input);
 }
 
 
 WaveClf::~WaveClf() {
+    DeleteSession();
     Py_Finalize();
 }
