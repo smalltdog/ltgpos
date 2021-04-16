@@ -82,3 +82,8 @@ System.load("/home/yftx02/ltgpos/libs/libltgpos.so");
 ```
 
 ## TODO
+
+- [ ] refer or avg?
+- [ ] not minus base ms
+- [ ] N & 1e6
+- [ ] goodness calculation

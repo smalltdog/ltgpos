@@ -5,6 +5,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <vector>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -22,6 +23,9 @@ void gen_sch_dom(double* srr_locs, int num_ssrs, long involved, double* sch_dom)
 
 // Filter out outlier sensors.
 long filter_outliers(double* ssr_locs, int num_ssrs);
+
+// Grubbs's test.
+std::vector<double> grubbs_test(std::vector<double> data);
 
 
 inline int get_num_involved(long n) {
