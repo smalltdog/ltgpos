@@ -1,6 +1,8 @@
 import pandas as pd
 import argparse
-from geodistance import get_geodistance
+from vincenty import vincenty
+
+# from geodistance import get_geodistance
 
 
 parser = argparse.ArgumentParser()
@@ -24,8 +26,8 @@ def hist(df: pd.DataFrame, attr: str, box: float, overflow: float):
 df_l = pd.read_csv(label, sep=',', header=None)
 df_o = pd.read_csv(output, sep=',', header=None)
 df = pd.concat([df_l, df_o], axis=1)
-df[df.shape[1]] = [get_geodistance(row[1], row[2], row[4], row[5]) if df.shape[1] != 7 else
-                   get_geodistance(row[1], row[2], row[3], row[4]) for row in df.itertuples()]      # deprecated
+df[df.shape[1]] = [vincenty((row[1], row[2]), (row[4], row[5])) if df.shape[1] != 7 else
+                   vincenty((row[1], row[2]), (row[3], row[4])) for row in df.itertuples()]      # deprecated
 df.to_csv(resanal, sep =',', index=False, header=False, float_format='%.4f')
 
 hist(df.iloc[:, -1], 'Dist', box=0.2, overflow=5)

@@ -7,8 +7,8 @@
 #define C   299.792458
 #define PI  3.14159265358979323846
 #define RA  6378.137
-#define RB  6356.7523142
-#define OBLATE  (1 / 298.257223563)
+#define RB  6356.752314245
+#define F   (1 / 298.257223563)
 #define rad(deg) (deg * PI / 180.0)
 
 

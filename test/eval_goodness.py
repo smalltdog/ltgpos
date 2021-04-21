@@ -1,8 +1,9 @@
 import pandas as pd
 import argparse
 import json
+from vincenty import vincenty
 
-from geodistance import get_geodistance
+# from geodistance import *
 
 
 parser = argparse.ArgumentParser()
@@ -21,8 +22,8 @@ def goodness(lat, lon, locs, times, involved=None):
     for i, t in enumerate(times):
         if involved is not None and involved[i] != 1:
             continue
-        dt[i] = get_geodistance(locs[i * 2], locs[i * 2 + 1], lat, lon) / 299.792458
-        t0 += dt[i] - times[i]
+        dt[i] = vincenty((locs[i * 2], locs[i * 2 + 1]), (lat, lon))
+        t0 += dt[i] / 299.792458 - times[i]
         n_involved += 1
     t0 /= n_involved
 
@@ -31,7 +32,7 @@ def goodness(lat, lon, locs, times, involved=None):
             continue
         dt[i] -= t0 + times[i]
         err += dt[i] ** 2 * 1e6
-    return err / (n_involved - 2)
+    return err / (n_involved)
 
 
 def main():
@@ -40,12 +41,13 @@ def main():
     with open(output, encoding='utf-8') as f:
         for i, line in enumerate(f):
             data = json.loads(line)
-            if len(data['isInvolved']) != sum(data['isInvolved']):
-                print()
+            # if len(data['isInvolved']) != sum(data['isInvolved']):
+            #     print()
             input = data['raw']
             ssr_locs = []
             ssr_times = []
-            t_base = input[0]['microsecond']
+            # t_base = input[0]['microsecond']
+            t_base = 0
             for node in input:
                 ssr_locs.append(node['latitude'])
                 ssr_locs.append(node['longitude'])
@@ -55,7 +57,8 @@ def main():
                     dt += 1e3
                 ssr_times.append(dt)
             g0 = goodness(df.iloc[i, 0], df.iloc[i, 1], ssr_locs, ssr_times, data['isInvolved'])
-            print(f'{g0 - data["goodness"]:.6f}')
+            g1 = goodness(data['latitude'], data['longitude'], ssr_locs, ssr_times, data['isInvolved'])
+            print(f'{g0 - g1:.6f}')
 
 
 if __name__ == '__main__':

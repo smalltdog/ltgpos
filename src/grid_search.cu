@@ -29,7 +29,7 @@ __global__ void calGirdGoodness2d_G(ssrinfo_t sinfo, grdinfo_t ginfo)
         dt[i] -= t0 + ssr_times[i];
         err += dt[i] * dt[i] * 1e6;
     }
-    err /= num_involved - 2;
+    err /= num_involved;
     ginfo.douts[blockIdx.x * blockDim.x + threadIdx.x] = err;
 }
 
