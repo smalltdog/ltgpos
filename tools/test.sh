@@ -28,7 +28,7 @@ while getopts "i:o" arg; do
 done
 
 if [ "$OUT" = true ]; then
-	test/test.out $IN > test/data/output.csv
+	test/test.out test/data/input_$IN.csv > test/data/output_$IN.csv
 else
-	test/test.out $IN
+	test/test.out test/data/input_$IN.csv
 fi
