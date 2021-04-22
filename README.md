@@ -83,7 +83,7 @@ System.load("/home/yftx02/ltgpos/libs/libltgpos.so");
 
 ## TODO
 
-- [ ] refer or avg?
-- [ ] not minus base ms
-- [ ] N & 1e6
-- [ ] goodness calculation
+- [ ] Tune goodness threshold for Vincenty Formula
+- [ ] Analyze gt result: traverse all combination (grd_inv, sch_dom)
+- [ ] Analyze 0 gooness but large error result (grd_inv, sch_dom)
+- [ ] Plot 3D goodness map

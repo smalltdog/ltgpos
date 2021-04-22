@@ -12,7 +12,7 @@ double getGeoDistance2d_H(double lat1, double lon1, double lat2, double lon2)
     double sin_alpha, cos2_alpha, cos_2sigma;
     double lambda_p, dlambda = 1;
     double c;
-    int it = 100;
+    int it = 10;
     while (dlambda > 1e-8 && --it) {
         sin_sigma = sqrt(pow(cos(u2) * sin(lambda), 2) + pow(cos(u1) * sin(u2) - sin(u1) * cos(u2) * cos(lambda), 2));
         cos_sigma = sin(u1) * sin(u2) + cos(u1) * cos(u2) * cos(lambda);
@@ -48,7 +48,7 @@ double getGeoDistance2d_D(double lat1, double lon1, double lat2, double lon2)
     double sin_alpha, cos2_alpha, cos_2sigma;
     double lambda_p, dlambda = 1;
     double c;
-    int it = 100;
+    int it = 10;
     while (dlambda > 1e-8 && --it) {
         sin_sigma = sqrt(pow(cos(u2) * sin(lambda), 2) + pow(cos(u1) * sin(u2) - sin(u1) * cos(u2) * cos(lambda), 2));
         cos_sigma = sin(u1) * sin(u2) + cos(u1) * cos(u2) * cos(lambda);
@@ -109,7 +109,7 @@ double getGeoDistance2d_D(double lat1, double lon1, double lat2, double lon2)
 // double sin_alpha, cos2_alpha, cos_2sigma;
 // double lambda_p, dlambda = 1;
 // double c;
-// int it = 100;
+// int it = 10;
 // while (dlambda > 1e-8 && --it) {
 //     sin_sigma = sqrt(pow(cos(u2) * sin(lambda), 2) + pow(cos(u1) * sin(u2) - sin(u1) * cos(u2) * cos(lambda), 2));
 //     cos_sigma = sin(u1) * sin(u2) + cos(u1) * cos(u2) * cos(lambda);
