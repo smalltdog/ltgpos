@@ -145,12 +145,12 @@ def transform(freq: int, input: np.ndarray):
 
     # interpolate
     f = interp1d(list(range(len(input))), input, kind='cubic')
-    x = np.linspace(0, len(input) - 1, num=2000000 // int(freq) * len(input))
+    x = np.linspace(0, len(input) - 1, num=2000000 * len(input) // int(freq))
     input = f(x)
 
     input = input[:2400]
     if len(input) < 2400:
-        input += [0 for _ in range(2400 - len(input))]
+        input = np.concatenate([input, np.zeros((2400 - len(input)))])
 
     # sliding window
     wins = []
@@ -208,24 +208,23 @@ class Ltgwave(object):
             if DEBUG:
                 print('Connected')
             while True:
-                byteData = conn.recv(2500 * 8)
+                byteData = conn.recv(4 * 1024 ** 2 * 8)
                 if len(byteData) == 0:
                     if DEBUG:
                         print('Closed')
                     break
                 data = np.frombuffer(byteData)
 
-                flag, freq, input = data[0], data[1], data[2:]
-                flag = int(flag)
-                freq = freq
-
-                if DEBUG:
-                    print('flag ', flag)
-                    print('freq ', freq)
-                    print('insz ', len(input))
-                    print('data ', input)
+                flag = int(data[0])
 
                 if flag == 0:
+                    flag, freq, input = data[0], data[1], data[2:]
+                    if DEBUG:
+                        print('flag ', flag)
+                        print('freq ', freq)
+                        print('insz ', len(input))
+                        print('data ', input)
+
                     input = transform(freq, input)
                     with torch.no_grad():
                         output = torch.argmax(self.model(input)).item()
